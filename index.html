@@ -2,154 +2,103 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>¡Atrapa la moneda Arcade! 🥤 - Beta 2.1</title>
+<title>¡Atrapa la moneda Arcade! - Update 3.0</title>
 <style>
-body {
-  text-align: center;
-  font-family: sans-serif;
-  background: #222;
-  color: #fff;
-  transition: all 0.5s;
-}
-h1 { color: #ffdd00; }
-#moneda {
-  font-size: 50px;
-  margin: 20px;
-  display: inline-block;
-  transition: transform 0.3s;
-}
-#mensaje, #puntaje { font-size: 20px; margin: 10px; }
-
-/* BOTONES */
-button {
-  padding: 8px 16px;
-  margin: 5px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* TEMAS */
-.tema-oscuro{
-  background:#111;
-  color:white;
-}
-.tema-neon{
-  background:black;
-  color:#00ffcc;
-}
-.tema-neon h1{
-  color:#ff00ff;
-  text-shadow:0 0 20px #ff00ff;
-}
-.tema-neon button{
-  background:#ff00ff;
-  color:black;
-}
-.tema-fuego{
-  background:linear-gradient(180deg,#200000,#600000);
-  color:#ffcc00;
-}
-.tema-fuego h1{
-  color:#ff3300;
-  text-shadow:0 0 20px #ff0000;
-}
-.tema-fuego button{
-  background:#ff3300;
-  color:white;
-}
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    background: #222;
+    color: #fff;
+  }
+  h1 {
+    color: #ffdd00;
+  }
+  #moneda {
+    font-size: 50px;
+    margin: 20px;
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  #mensaje, #puntaje, #guia {
+    font-size: 18px;
+    margin: 10px;
+  }
+  #boss {
+    font-size: 40px;
+    color: #ff5555;
+    display: none;
+    margin: 20px;
+  }
+  #menu {
+    margin-top: 20px;
+    background: #333;
+    padding: 10px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+  #menu label {
+    margin-right: 10px;
+  }
+  select, input[type=checkbox] {
+    margin-right: 20px;
+  }
 </style>
 </head>
 <body>
-<h1>¡Atrapa la Gaseosa Arcade! 🥤</h1>
-<p id="puntaje">Pesos: 0 | Vidas: 5</p>
-<p id="mensaje">Presiona L, C o R para atrapar la moneda</p>
-<p id="moneda">💰</p>
 
-<!-- MENÚ CONFIG - Update 2.0 -->
+<h1>¡Atrapa la Gaseosa Arcade! 🥤</h1>
+
+<div id="puntaje">Pesos: 0 | Vidas: 5</div>
+<div id="mensaje">Presiona L, C o R para atrapar la moneda</div>
+<div id="guia">Guía: Sube de puntaje para enfrentar al Boss</div>
+<div id="moneda">💰</div>
+<div id="boss">👾</div>
+
 <div id="menu">
-  <h2>⚙ Configuración</h2>
-  <p>🔊 Sonido: 
-    <select id="sonidoOpt">
-      <option value="true">On</option>
-      <option value="false">Off</option>
-    </select>
-  </p>
-  <p>🎮 Dificultad:
-    <select id="dificultadOpt">
-      <option value="normal">Normal</option>
-      <option value="difícil">Difícil</option>
-    </select>
-  </p>
-  <p>🎨 Tema:
-    <select id="temaOpt">
-      <option value="oscuro">Oscuro</option>
-      <option value="neon">Neón</option>
-      <option value="fuego">Fuego</option>
-    </select>
-  </p>
-  <button onclick="guardarConfig()">Guardar Configuración</button>
+  <label for="tema">Tema:</label>
+  <select id="tema">
+    <option value="#222,#fff">Normal</option>
+    <option value="#004400,#aaffaa">Verde</option>
+    <option value="#220044,#ddaaff">Morado</option>
+  </select>
+  <label><input type="checkbox" id="sonido" checked> Sonido</label>
 </div>
 
-<!-- SONIDO -->
-<audio id="sonidoMoneda" src="https://www.soundjay.com/button/sounds/button-16.mp3"></audio>
+<audio id="sonidoMoneda" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+<audio id="sonidoBoss" src="https://www.soundjay.com/button/button-16.mp3"></audio>
 
 <script>
 let pesos = 0;
 let vidas = 5;
+const opciones = ['L','C','R'];
+let secuencia = ['R','L','C','L','R','C','R']; // Secuencia personalizada
+let indiceSecuencia = 0;
+let monedaEl = document.getElementById('moneda');
+let mensajeEl = document.getElementById('mensaje');
+let puntajeEl = document.getElementById('puntaje');
+let bossEl = document.getElementById('boss');
+let sonidoEl = document.getElementById('sonidoMoneda');
+let sonidoBoss = document.getElementById('sonidoBoss');
 
-// Secuencia personalizada de monedas
-let posiciones = ['L','R','C','L','R','C','R'];
-let indice = 0;
-
-const monedaEl = document.getElementById('moneda');
-const mensajeEl = document.getElementById('mensaje');
-const puntajeEl = document.getElementById('puntaje');
-const sonidoMoneda = document.getElementById('sonidoMoneda');
-
-// Configuración inicial (Update 2.0)
-let config = {
-  sonido: true,
-  dificultad: 'normal',
-  tema: 'oscuro'
-};
-
-// Función para aplicar tema
-function aplicarTema(){
-  document.body.classList.remove('tema-oscuro','tema-neon','tema-fuego');
-  document.body.classList.add('tema-' + config.tema);
-}
-
-// Guardar configuración
-function guardarConfig(){
-  config.sonido = document.getElementById('sonidoOpt').value === 'true';
-  config.dificultad = document.getElementById('dificultadOpt').value;
-  config.tema = document.getElementById('temaOpt').value;
-  aplicarTema();
-  alert('Configuración guardada ✅');
-}
-
-// Nueva moneda con animación (Parche 1.5)
-function nuevaMoneda(){
-  if(indice >= posiciones.length) indice = 0;
-  let pos = posiciones[indice];
-  indice++;
-  monedaEl.innerText = '💰 ' + pos;
+function nuevaMoneda() {
+  let pos = secuencia[indiceSecuencia];
+  indiceSecuencia = (indiceSecuencia + 1) % secuencia.length;
+  monedaEl.innerText = pos === 'L' ? '💰 L' : pos === 'C' ? '💰 C' : '💰 R';
   monedaEl.style.transform = 'scale(1.5)';
-  setTimeout(()=>{monedaEl.style.transform='scale(1)';},200);
+  setTimeout(()=>{monedaEl.style.transform='scale(1)';}, 150);
   return pos;
 }
 
 let monedaActual = nuevaMoneda();
 
-// Detectar teclas - compatible celular con teclado virtual
 document.addEventListener('keydown', function(e){
   const eleccion = e.key.toUpperCase();
-  if(!['L','C','R'].includes(eleccion)) return;
+  if(!opciones.includes(eleccion)) return;
 
   if(eleccion === monedaActual){
     pesos++;
     mensajeEl.innerText = `¡Atrapaste la moneda en ${eleccion}!`;
-    if(config.sonido) sonidoMoneda.play();
+    if(document.getElementById('sonido').checked) sonidoEl.play();
   } else {
     vidas--;
     mensajeEl.innerText = `Fallaste, la moneda estaba en ${monedaActual}`;
@@ -157,19 +106,53 @@ document.addEventListener('keydown', function(e){
 
   puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
 
+  // Boss Fight activación
+  if(pesos === 5){
+    bossEl.style.display = 'block';
+    bossEl.innerText = '👾 Boss: Vida 3';
+  }
+
+  // Ataque Boss
+  if(bossEl.style.display === 'block'){
+    let vidaBoss = parseInt(bossEl.innerText.split(' ')[2]);
+    if(eleccion === 'C'){ // atacar boss con C
+      vidaBoss--;
+      if(document.getElementById('sonido').checked) sonidoBoss.play();
+      if(vidaBoss <= 0){
+        bossEl.style.display = 'none';
+        mensajeEl.innerText = '¡Boss derrotado! 🎉';
+        pesos += 3;
+      } else {
+        bossEl.innerText = `👾 Boss: Vida ${vidaBoss}`;
+        mensajeEl.innerText = '¡Golpeaste al Boss!';
+      }
+    }
+  }
+
   if(pesos >= 7){
     alert('¡Felicidades! Ganaste tu gaseosa 🥤');
-    pesos=0; vidas=5;
+    pesos = 0;
+    vidas = 5;
+    bossEl.style.display = 'none';
+    indiceSecuencia = 0;
   } else if(vidas <= 0){
     alert('Perdiste todas tus vidas 😢');
-    pesos=0; vidas=5;
+    pesos = 0;
+    vidas = 5;
+    bossEl.style.display = 'none';
+    indiceSecuencia = 0;
   }
 
   monedaActual = nuevaMoneda();
 });
 
-// Aplicar configuración inicial
-aplicarTema();
+// Menú: cambio de tema
+document.getElementById('tema').addEventListener('change', function(){
+  let colores = this.value.split(',');
+  document.body.style.background = colores[0];
+  document.body.style.color = colores[1];
+});
 </script>
+
 </body>
 </html>
