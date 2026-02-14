@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>¡Atrapa la Gaseosa Arcade! - Estático</title>
+<title>¡Atrapa la Gaseosa Arcade! - Mega Admin</title>
 <style>
   body { text-align:center; font-family:sans-serif; background:#222; color:#fff; }
   h1 { color:#ffdd00; }
-  #moneda { font-size:50px; margin:20px; }
+  #moneda { font-size:50px; margin:20px; display:inline-block; transition: transform 0.3s ease; }
   #mensaje, #puntaje { font-size:20px; margin:10px; }
-  #menu { margin-top:20px; }
-  button { margin:5px; padding:10px; font-size:16px; }
+  #adminPanel { margin-top:20px; border:1px solid #fff; padding:10px; display:inline-block; }
+  button { margin:5px; padding:10px; font-size:16px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -19,9 +19,12 @@
 <p id="mensaje">Presiona L, C o R para atrapar la moneda</p>
 <p id="moneda">💰</p>
 
-<div id="menu">
-  <button onclick="reiniciar()">Reiniciar</button>
-  <button onclick="modoAdmin()">Modo Admin</button>
+<div id="adminPanel">
+  <h3>Admin Panel</h3>
+  <button onclick="comandoParty()">Party (Caen monedas)</button>
+  <button onclick="comandoClear()">Clear (Limpiar monedas)</button>
+  <button onclick="comandoRainDiamonds()">Rain Diamonds 💎</button>
+  <button onclick="reiniciar()">Reiniciar Juego</button>
 </div>
 
 <script>
@@ -33,50 +36,28 @@ const monedaEl = document.getElementById('moneda');
 const mensajeEl = document.getElementById('mensaje');
 const puntajeEl = document.getElementById('puntaje');
 
-// Secuencia predefinida para admin
-let secuenciaMonedas = ['R','L','C','L','R','C','R']; 
-let indiceSecuencia = 0;
+// Animación simple
+function animarMoneda() {
+  monedaEl.style.transform = 'scale(1.5)';
+  setTimeout(()=>{ monedaEl.style.transform = 'scale(1)'; }, 200);
+}
 
-// Nueva moneda (estático: solo cambia el emoji y letra)
+// Generar nueva moneda
 function nuevaMoneda() {
-  let pos;
-  if (indiceSecuencia < secuenciaMonedas.length) {
-    pos = secuenciaMonedas[indiceSecuencia];
-    indiceSecuencia++;
-  } else {
-    pos = opciones[Math.floor(Math.random()*3)];
-  }
-
+  const pos = opciones[Math.floor(Math.random()*3)];
   monedaEl.innerText = pos==='L'? '💰 L' : pos==='C'? '💰 C' : '💰 R';
+  animarMoneda();
   return pos;
 }
 
 let monedaActual = nuevaMoneda();
-
-// Detectar teclas (PC)
-document.addEventListener('keydown', function(e){
-  const eleccion = e.key.toUpperCase();
-  if (!opciones.includes(eleccion)) return;
-
-  checarMoneda(eleccion);
-});
-
-// Detectar toque (móvil)
-monedaEl.addEventListener('click', function(){
-  let eleccion = prompt("¿Qué posición atrapas? L, C o R?").toUpperCase();
-  if (!opciones.includes(eleccion)) return;
-
-  checarMoneda(eleccion);
-});
 
 // Función para checar moneda
 function checarMoneda(eleccion) {
   if (eleccion === monedaActual) {
     pesos++;
     mensajeEl.innerText = `¡Atrapaste la moneda en ${eleccion}!`;
-    // Sonido simple
-    let audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-    audio.play();
+    new Audio('https://www.soundjay.com/button/beep-07.wav').play();
   } else {
     vidas--;
     mensajeEl.innerText = `Fallaste, la moneda estaba en ${monedaActual}`;
@@ -95,19 +76,46 @@ function checarMoneda(eleccion) {
   }
 }
 
-// Función de reinicio
+// Detectar teclas
+document.addEventListener('keydown', function(e){
+  const eleccion = e.key.toUpperCase();
+  if (opciones.includes(eleccion)) checarMoneda(eleccion);
+});
+
+// Detectar toque móvil
+monedaEl.addEventListener('click', function(){
+  let eleccion = prompt("¿Qué posición atrapas? L, C o R?").toUpperCase();
+  if (opciones.includes(eleccion)) checarMoneda(eleccion);
+});
+
+// Comandos admin
+function comandoParty() {
+  mensajeEl.innerText = '¡Party activado! Caen monedas extra 🎉';
+  for(let i=0;i<3;i++) {
+    pesos++;
+  }
+  puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
+}
+
+function comandoClear() {
+  mensajeEl.innerText = '¡Monedas limpiadas! 🧹';
+  pesos = 0;
+  puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
+}
+
+function comandoRainDiamonds() {
+  mensajeEl.innerText = '¡Rain Diamonds activado! 💎💎💎';
+  for(let i=0;i<5;i++) pesos++;
+  puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
+}
+
+// Reiniciar juego
 function reiniciar() {
   pesos = 0;
   vidas = 5;
-  indiceSecuencia = 0;
   monedaActual = nuevaMoneda();
   puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
   mensajeEl.innerText = 'Presiona L, C o R para atrapar la moneda';
-}
-
-// Función admin
-function modoAdmin() {
-  alert("Modo Admin activado: Secuencia de monedas fija activada");
 }
 
 </script>
