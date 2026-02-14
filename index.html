@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda Mega</title>
+<title>Atrapa la Moneda Mega Final</title>
 <style>
 body{
   margin:0;
@@ -13,16 +13,18 @@ body{
   overflow:hidden;
 }
 h1{
-  color:#00ffcc;
-  text-shadow:0 0 10px #00ffcc;
+  color:#ff00ff;
+  text-shadow:0 0 15px #ff00ff, 0 0 30px #ff00ff;
 }
 button{
   padding:10px 20px;
   font-size:18px;
-  background:#00ffcc;
+  background:#ff00ff;
   border:none;
   border-radius:10px;
   cursor:pointer;
+  color:#fff;
+  text-shadow:0 0 5px #fff;
 }
 #game, #adminPanel{ display:none; }
 #moneda{
@@ -35,7 +37,7 @@ button{
 #moneda.anim{ transform: scale(1.5); }
 .info{ font-size:20px; margin:10px; }
 
-.fallingCoin, .diamond{
+.fallingCoin, .diamond, .bossCoin{
   position:absolute;
   font-size:30px;
   top:-50px;
@@ -44,6 +46,7 @@ button{
   animation-duration: 3s;
 }
 .diamond{ color: #00ffff; font-size:25px; }
+.bossCoin{ color: gold; font-size:35px; }
 
 @keyframes falling {
   0%{ top:-50px; }
@@ -53,7 +56,7 @@ button{
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA</h1>
+<h1>🎮 ATRAPA LA MONEDA MEGA FINAL</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR JUEGO</button>
@@ -62,7 +65,7 @@ button{
 
 <div id="game">
   <h2 id="moneda">❓</h2>
-  <p>Presiona L, C o R</p>
+  <p>Presiona L, C o R o toca la moneda</p>
   <div class="info" id="stats"></div>
 </div>
 
@@ -71,10 +74,12 @@ button{
   <button onclick="comandoParty()">Party 🎉</button>
   <button onclick="comandoClear()">Clear 🧹</button>
   <button onclick="comandoRainDiamonds()">Rain Diamonds 💎</button>
+  <button onclick="comandoBoss()">Boss Event 👑</button>
   <button onclick="cerrarAdmin()">Cerrar Panel</button>
 </div>
 
 <audio id="coinSound" src="https://freesound.org/data/previews/341/341695_5260870-lq.mp3"></audio>
+<audio id="bossSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
 
 <script>
 let pesos = 0;
@@ -90,6 +95,7 @@ let intervalo;
 const monedaEl = document.getElementById("moneda");
 const statsEl = document.getElementById("stats");
 const coinSound = document.getElementById("coinSound");
+const bossSound = document.getElementById("bossSound");
 
 function iniciar(){
   document.getElementById("menu").style.display="none";
@@ -144,6 +150,7 @@ function atraparMoneda(){
   crearMonedaCayendo("💰");
 }
 
+// Teclado
 document.addEventListener("keydown", function(e){
   const eleccion = e.key.toUpperCase();
   if(!["L","C","R"].includes(eleccion)) return;
@@ -153,7 +160,7 @@ document.addEventListener("keydown", function(e){
   nuevaMoneda();
 });
 
-// Para celular
+// Celular
 monedaEl.addEventListener("click", ()=>{
   atraparMoneda();
   nuevaMoneda();
@@ -170,23 +177,12 @@ function crearMonedaCayendo(simbolo){
   setTimeout(()=> coin.remove(), 3000);
 }
 
-// Admin panel
-function abrirAdmin(){
-  document.getElementById("adminPanel").style.display="block";
-}
+// Admin Panel
+function abrirAdmin(){ document.getElementById("adminPanel").style.display="block"; }
+function cerrarAdmin(){ document.getElementById("adminPanel").style.display="none"; }
 
-function cerrarAdmin(){
-  document.getElementById("adminPanel").style.display="none";
-}
-
-function comandoParty(){
-  for(let i=0;i<20;i++) crearMonedaCayendo("💰");
-}
-
-function comandoClear(){
-  document.querySelectorAll(".fallingCoin, .diamond").forEach(el=> el.remove());
-}
-
+function comandoParty(){ for(let i=0;i<20;i++) crearMonedaCayendo("💰"); }
+function comandoClear(){ document.querySelectorAll(".fallingCoin, .diamond, .bossCoin").forEach(el=> el.remove()); }
 function comandoRainDiamonds(){
   for(let i=0;i<30;i++){
     const dia = document.createElement("div");
@@ -196,6 +192,21 @@ function comandoRainDiamonds(){
     dia.style.animationDuration=(2+Math.random()*2)+"s";
     document.body.appendChild(dia);
     setTimeout(()=> dia.remove(), 3000);
+  }
+}
+
+// Boss Event
+function comandoBoss(){
+  bossSound.currentTime=0;
+  bossSound.play();
+  for(let i=0;i<50;i++){
+    const bossCoin = document.createElement("div");
+    bossCoin.className="bossCoin";
+    bossCoin.innerText="👑";
+    bossCoin.style.left = Math.random()*90 + "vw";
+    bossCoin.style.animationDuration=(1.5 + Math.random()*2)+"s";
+    document.body.appendChild(bossCoin);
+    setTimeout(()=> bossCoin.remove(), 4000);
   }
 }
 </script>
