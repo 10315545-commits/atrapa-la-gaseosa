@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atrapa la Moneda 1.6</title>
+<title>Atrapa la Moneda 2.0</title>
 
 <style>
 body{
   margin:0;
-  background:linear-gradient(180deg,#0f0f0f,#1a1a1a);
+  background:#111;
   color:white;
   font-family:Arial;
   text-align:center;
@@ -20,20 +20,17 @@ h1{
   text-shadow:0 0 15px #00ffcc;
 }
 
-#menu{
-  margin-top:80px;
-}
-
 button{
-  padding:15px 30px;
-  font-size:20px;
+  padding:12px 25px;
+  margin:8px;
+  font-size:18px;
   background:#00ffcc;
   border:none;
-  border-radius:15px;
+  border-radius:10px;
   cursor:pointer;
 }
 
-#game{
+#game,#config{
   display:none;
 }
 
@@ -49,7 +46,6 @@ button{
 #moneda{
   position:absolute;
   font-size:70px;
-  transition: transform 0.15s;
 }
 
 #botones{
@@ -67,18 +63,48 @@ button{
   border-radius:20px;
 }
 
-.info{
-  margin-top:10px;
-  font-size:18px;
+select{
+  padding:8px;
+  font-size:16px;
 }
 </style>
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA</h1>
+<h1>🎮 ATRAPA LA MONEDA 2.0</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR</button>
+  <button onclick="abrirConfig()">CONFIGURACIÓN</button>
+</div>
+
+<div id="config">
+  <h2>⚙ Configuración</h2>
+
+  <p>🔊 Sonido:
+    <select id="sonidoOpt">
+      <option value="true">Activado</option>
+      <option value="false">Desactivado</option>
+    </select>
+  </p>
+
+  <p>📳 Vibración:
+    <select id="vibracionOpt">
+      <option value="true">Activada</option>
+      <option value="false">Desactivada</option>
+    </select>
+  </p>
+
+  <p>⚡ Dificultad:
+    <select id="dificultadOpt">
+      <option value="facil">Fácil</option>
+      <option value="normal">Normal</option>
+      <option value="extremo">Extremo</option>
+    </select>
+  </p>
+
+  <button onclick="guardarConfig()">Guardar</button>
+  <button onclick="cerrarConfig()">Volver</button>
 </div>
 
 <div id="game">
@@ -87,7 +113,7 @@ button{
     <div id="moneda">🪙</div>
   </div>
 
-  <div class="info" id="stats"></div>
+  <div id="stats"></div>
 
   <div id="botones">
     <button onclick="respuesta('L')">L</button>
@@ -101,29 +127,28 @@ button{
 
 let pesos = 0;
 let vidas = 5;
-let record = localStorage.getItem("record") || 0;
-
-let posicionesX = {
-  "L": "15%",
-  "C": "45%",
-  "R": "75%"
-};
-
-let secuencia = ["R","L","C","L","R","C","R"];
-let indice = 0;
-
-let monedaActual = "";
+let velocidadBase = 2;
 let velocidadCaida = 2;
-let animacion;
+let monedaActual = "";
 let y = -80;
-
+let animacion;
 let audioContext;
+
+let config = {
+  sonido: true,
+  vibracion: true,
+  dificultad: "normal"
+};
 
 const monedaEl = document.getElementById("moneda");
 const statsEl = document.getElementById("stats");
 
+let posiciones = ["L","C","R"];
+
+cargarConfig();
+
 function iniciar(){
-  initAudio();
+  aplicarDificultad();
   document.getElementById("menu").style.display="none";
   document.getElementById("game").style.display="block";
   resetGame();
@@ -132,22 +157,18 @@ function iniciar(){
 function resetGame(){
   pesos = 0;
   vidas = 5;
-  velocidadCaida = 2;
-  indice = 0;
-  actualizarStats();
+  velocidadCaida = velocidadBase;
   nuevaMoneda();
+  actualizarStats();
 }
 
 function nuevaMoneda(){
-  monedaActual = secuencia[indice];
-  monedaEl.style.left = posicionesX[monedaActual];
-  y = -80;
-  monedaEl.style.top = y + "px";
+  monedaActual = posiciones[Math.floor(Math.random()*3)];
+  let posX = {L:"15%",C:"45%",R:"75%"};
+  monedaEl.style.left = posX[monedaActual];
 
-  indice++;
-  if(indice >= secuencia.length){
-    indice = 0;
-  }
+  y = -80;
+  monedaEl.style.top = y+"px";
 
   cancelAnimationFrame(animacion);
   animacion = requestAnimationFrame(caer);
@@ -155,7 +176,7 @@ function nuevaMoneda(){
 
 function caer(){
   y += velocidadCaida;
-  monedaEl.style.top = y + "px";
+  monedaEl.style.top = y+"px";
 
   if(y > 250){
     perderVida();
@@ -165,28 +186,15 @@ function caer(){
   animacion = requestAnimationFrame(caer);
 }
 
-function actualizarStats(){
-  statsEl.innerText =
-    "Pesos: " + pesos +
-    " | Vidas: " + vidas +
-    " | Récord: " + record;
-}
-
 function respuesta(eleccion){
 
   if(eleccion === monedaActual){
-
     cancelAnimationFrame(animacion);
-
     pesos++;
     velocidadCaida += 0.3;
 
-    monedaEl.style.transform="scale(1.3)";
-    setTimeout(()=>monedaEl.style.transform="scale(1)",150);
-
-    sonidoAcierto();
+    if(config.sonido) sonidoAcierto();
     nuevaMoneda();
-
   }else{
     perderVida();
   }
@@ -198,14 +206,15 @@ function perderVida(){
   cancelAnimationFrame(animacion);
   vidas--;
 
-  sonidoError();
-
-  if(navigator.vibrate){
+  if(config.sonido) sonidoError();
+  if(config.vibracion && navigator.vibrate){
     navigator.vibrate(200);
   }
 
   if(vidas <= 0){
-    gameOver();
+    alert("GAME OVER\nPuntaje: "+pesos);
+    document.getElementById("game").style.display="none";
+    document.getElementById("menu").style.display="block";
   }else{
     nuevaMoneda();
   }
@@ -213,64 +222,88 @@ function perderVida(){
   actualizarStats();
 }
 
-function gameOver(){
-
-  if(pesos > record){
-    record = pesos;
-    localStorage.setItem("record", record);
-  }
-
-  alert("GAME OVER\nPuntaje: " + pesos);
-  resetGame();
+function actualizarStats(){
+  statsEl.innerText = "Pesos: "+pesos+" | Vidas: "+vidas;
 }
 
-/* 🔊 SONIDO ARCADE REAL */
+function sonidoAcierto(){
+  initAudio();
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.type="square";
+  osc.frequency.value=700;
+  gain.gain.value=0.1;
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.start();
+  osc.stop(audioContext.currentTime+0.2);
+}
+
+function sonidoError(){
+  initAudio();
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.type="sawtooth";
+  osc.frequency.value=200;
+  gain.gain.value=0.1;
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.start();
+  osc.stop(audioContext.currentTime+0.3);
+}
+
 function initAudio(){
   if(!audioContext){
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
 }
 
-function sonidoAcierto(){
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  osc.type = "square";
-  osc.frequency.value = 600;
-  gain.gain.value = 0.1;
-
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-
-  osc.start();
-  osc.frequency.setValueAtTime(900, audioContext.currentTime + 0.1);
-  osc.stop(audioContext.currentTime + 0.2);
+function abrirConfig(){
+  document.getElementById("menu").style.display="none";
+  document.getElementById("config").style.display="block";
 }
 
-function sonidoError(){
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  osc.type = "sawtooth";
-  osc.frequency.value = 200;
-  gain.gain.value = 0.1;
-
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-
-  osc.start();
-  osc.frequency.setValueAtTime(100, audioContext.currentTime + 0.2);
-  osc.stop(audioContext.currentTime + 0.3);
+function cerrarConfig(){
+  document.getElementById("config").style.display="none";
+  document.getElementById("menu").style.display="block";
 }
 
-document.addEventListener("keydown", function(e){
-  const tecla = e.key.toUpperCase();
-  if(["L","C","R"].includes(tecla)){
-    respuesta(tecla);
+function guardarConfig(){
+  config.sonido = document.getElementById("sonidoOpt").value==="true";
+  config.vibracion = document.getElementById("vibracionOpt").value==="true";
+  config.dificultad = document.getElementById("dificultadOpt").value;
+
+  localStorage.setItem("configJuego", JSON.stringify(config));
+  aplicarDificultad();
+  cerrarConfig();
+}
+
+function cargarConfig(){
+  let guardado = localStorage.getItem("configJuego");
+  if(guardado){
+    config = JSON.parse(guardado);
+  }
+}
+
+function aplicarDificultad(){
+  if(config.dificultad==="facil"){
+    velocidadBase=1.5;
+  }
+  if(config.dificultad==="normal"){
+    velocidadBase=2;
+  }
+  if(config.dificultad==="extremo"){
+    velocidadBase=3.5;
+  }
+}
+
+document.addEventListener("keydown",function(e){
+  const t=e.key.toUpperCase();
+  if(["L","C","R"].includes(t)){
+    respuesta(t);
   }
 });
 
 </script>
-
 </body>
 </html>
