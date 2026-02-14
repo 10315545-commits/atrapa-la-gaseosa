@@ -1,45 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Atrapa la Gaseosa</title>
-<style>
-body {
-  text-align: center;
-  font-family: Arial, sans-serif;
-  background: #222;
-  color: white;
-}
-h1 {
-  color: #ffdd00;
-}
-#moneda {
-  font-size: 60px;
-  margin: 20px;
-}
-#mensaje {
-  font-size: 20px;
-  margin: 10px;
-}
-#puntaje {
-  font-size: 20px;
-  margin: 10px;
-}
-button {
-  padding: 10px 20px;
-  font-size: 18px;
-  cursor: pointer;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Juego de la Moneda</title>
 </head>
-<body>
+<body style="text-align:center; font-family:Arial; background:#111; color:white;">
 
-<h1>¡Atrapa la Gaseosa Arcade! 🥤</h1>
+<h1>🎮 Atrapa la Moneda 🎮</h1>
+
+<h2 id="moneda">❓</h2>
+
+<p>Presiona:</p>
+<p><b>L</b> = Izquierda | <b>C</b> = Centro | <b>R</b> = Derecha</p>
+
+<p id="mensaje"></p>
 <p id="puntaje">Pesos: 0 | Vidas: 5</p>
-<p id="mensaje">Presiona L, C o R para atrapar la moneda</p>
-monedaEl.innerText = '❓';
 
 <script>
+
 let pesos = 0;
 let vidas = 5;
 const opciones = ['L','C','R'];
@@ -49,8 +27,8 @@ const mensajeEl = document.getElementById('mensaje');
 const puntajeEl = document.getElementById('puntaje');
 
 function nuevaMoneda() {
-  const pos = opciones[Math.floor(Math.random()*3)];
-  monedaEl.innerText = '💰 ' + pos;
+  const pos = opciones[Math.floor(Math.random() * 3)];
+  monedaEl.innerText = "❓";
   return pos;
 }
 
@@ -62,7 +40,7 @@ document.addEventListener('keydown', function(e){
 
   if(eleccion === monedaActual) {
     pesos++;
-    mensajeEl.innerText = "¡Atrapaste la moneda!";
+    mensajeEl.innerText = "¡Atrapaste la moneda! 💰";
   } else {
     vidas--;
     mensajeEl.innerText = "Fallaste 😢";
@@ -71,7 +49,7 @@ document.addEventListener('keydown', function(e){
   puntajeEl.innerText = "Pesos: " + pesos + " | Vidas: " + vidas;
 
   if(pesos >= 7){
-    alert("¡Ganaste tu gaseosa! 🥤");
+    alert("¡Ganaste tu gaseosa! 🥤🔥");
     pesos = 0;
     vidas = 5;
   }
@@ -84,6 +62,7 @@ document.addEventListener('keydown', function(e){
 
   monedaActual = nuevaMoneda();
 });
+
 </script>
 
 </body>
