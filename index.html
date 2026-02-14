@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>¡Atrapa la Gaseosa Arcade - Mega Update!</title>
+<title>¡Atrapa la Gaseosa Arcade - Mega Update Animada!</title>
 <style>
   body {
     text-align: center;
@@ -19,7 +19,6 @@
   .moneda {
     font-size: 40px;
     position: absolute;
-    transition: transform 0.3s;
     cursor: pointer;
   }
   #adminPanel {
@@ -43,7 +42,7 @@
 
 <h1>¡Atrapa la Gaseosa Arcade! 🥤</h1>
 <p id="puntaje">Pesos: 0 | Vidas: 5</p>
-<p id="mensaje">Presiona L, C o R o atrapa las monedas del cielo</p>
+<p id="mensaje">Haz clic en las monedas o presiona L, C o R</p>
 
 <div id="adminPanel">
   <strong>Admin Panel</strong><br>
@@ -56,45 +55,44 @@
 let pesos = 0;
 let vidas = 5;
 const opciones = ['L', 'C', 'R'];
-let monedaActual = opciones[Math.floor(Math.random()*3)];
-const monedaEl = document.createElement('div');
-const mensajeEl = document.getElementById('mensaje');
 const puntajeEl = document.getElementById('puntaje');
+const mensajeEl = document.getElementById('mensaje');
 
-monedaEl.id = 'moneda';
-monedaEl.innerText = '💰';
-document.body.appendChild(monedaEl);
-posMoneda(monedaActual);
+// Posiciones fijas para las monedas principales
+const posicionesX = {
+  L: window.innerWidth * 0.2,
+  C: window.innerWidth * 0.5,
+  R: window.innerWidth * 0.8
+};
 
-function posMoneda(pos){
-  const width = window.innerWidth;
-  const left = pos === 'L' ? width*0.2 : pos === 'C' ? width*0.5 : width*0.8;
-  monedaEl.style.left = left + 'px';
-  monedaEl.style.top = '100px';
-}
-
-// Función de lluvia de monedas
-function crearMonedaCielo(emoji='💰'){
+// Función para crear una moneda animada desde el cielo
+function crearMoneda(pos, emoji='💰'){
   const mon = document.createElement('div');
   mon.className = 'moneda';
   mon.innerText = emoji;
-  mon.style.left = Math.random()*window.innerWidth + 'px';
+  mon.style.left = posicionesX[pos] + 'px';
   mon.style.top = '-50px';
   document.body.appendChild(mon);
 
-  const audio = new Audio('https://freesound.org/data/previews/331/331912_3248244-lq.mp3'); // sonido click
+  const audio = new Audio('https://freesound.org/data/previews/331/331912_3248244-lq.mp3'); 
   audio.volume = 0.3;
 
+  // Animación de caída
   function caer(){
     let top = parseInt(mon.style.top);
     top += 5;
     mon.style.top = top + 'px';
     if(top < window.innerHeight-50) requestAnimationFrame(caer);
-    else mon.remove();
+    else {
+      mon.remove();
+      vidas--;
+      mensajeEl.innerText = `Fallaste, la moneda se perdió`;
+      actualizarPuntaje();
+    }
   }
   mon.addEventListener('click', ()=>{
     pesos++;
-    mensajeEl.innerText = `¡Atrapaste la moneda del cielo!`;
+    mensajeEl.innerText = `¡Atrapaste la moneda!`;
     audio.play();
     mon.remove();
     actualizarPuntaje();
@@ -102,11 +100,16 @@ function crearMonedaCielo(emoji='💰'){
   caer();
 }
 
-// Actualiza el puntaje y vidas
+// Función para actualizar puntaje
 function actualizarPuntaje(){
   puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
   if(pesos >= 20){ 
     alert('¡Felicidades! Ganaste la gaseosa 🥤');
+    pesos = 0; vidas = 5;
+    actualizarPuntaje();
+  }
+  if(vidas <= 0){
+    alert('Perdiste todas tus vidas 😢');
     pesos = 0; vidas = 5;
     actualizarPuntaje();
   }
@@ -115,7 +118,7 @@ function actualizarPuntaje(){
 // Funciones de admin
 function rainMonedas(){
   for(let i=0;i<10;i++){
-    setTimeout(()=>crearMonedaCielo('💰'), i*200);
+    setTimeout(()=>crearMoneda(opciones[Math.floor(Math.random()*3)],'💰'), i*200);
   }
 }
 
@@ -126,24 +129,15 @@ function clearMonedas(){
 
 function rainDiamonds(){
   for(let i=0;i<10;i++){
-    setTimeout(()=>crearMonedaCielo('💎'), i*300);
+    setTimeout(()=>crearMoneda(opciones[Math.floor(Math.random()*3)],'💎'), i*300);
   }
 }
 
-// Captura de teclas para juego normal
+// Teclas para atrapar monedas principales
 document.addEventListener('keydown', function(e){
   const eleccion = e.key.toUpperCase();
   if(!opciones.includes(eleccion)) return;
-  if(eleccion === monedaActual){
-    pesos++;
-    mensajeEl.innerText = `¡Atrapaste la moneda en ${eleccion}!`;
-  } else {
-    vidas--;
-    mensajeEl.innerText = `Fallaste, la moneda estaba en ${monedaActual}`;
-  }
-  actualizarPuntaje();
-  monedaActual = opciones[Math.floor(Math.random()*3)];
-  posMoneda(monedaActual);
+  crearMoneda(eleccion);
 });
 </script>
 
