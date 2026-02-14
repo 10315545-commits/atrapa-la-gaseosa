@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>¡Atrapa la Gaseosa Arcade! 🥤 - Beta 2.1</title>
+<title>¡Atrapa la moneda Arcade! 🥤 - Beta 2.1</title>
 <style>
 body {
   text-align: center;
@@ -65,7 +65,7 @@ button {
 <p id="mensaje">Presiona L, C o R para atrapar la moneda</p>
 <p id="moneda">💰</p>
 
-<!-- MENÚ CONFIG -->
+<!-- MENÚ CONFIG - Update 2.0 -->
 <div id="menu">
   <h2>⚙ Configuración</h2>
   <p>🔊 Sonido: 
@@ -96,7 +96,9 @@ button {
 <script>
 let pesos = 0;
 let vidas = 5;
-let posiciones = ['L','R','C','L','R','C','R']; // tu orden personalizado
+
+// Secuencia personalizada de monedas
+let posiciones = ['L','R','C','L','R','C','R'];
 let indice = 0;
 
 const monedaEl = document.getElementById('moneda');
@@ -104,6 +106,7 @@ const mensajeEl = document.getElementById('mensaje');
 const puntajeEl = document.getElementById('puntaje');
 const sonidoMoneda = document.getElementById('sonidoMoneda');
 
+// Configuración inicial (Update 2.0)
 let config = {
   sonido: true,
   dificultad: 'normal',
@@ -116,7 +119,7 @@ function aplicarTema(){
   document.body.classList.add('tema-' + config.tema);
 }
 
-// Función para guardar configuración
+// Guardar configuración
 function guardarConfig(){
   config.sonido = document.getElementById('sonidoOpt').value === 'true';
   config.dificultad = document.getElementById('dificultadOpt').value;
@@ -125,7 +128,7 @@ function guardarConfig(){
   alert('Configuración guardada ✅');
 }
 
-// Nueva moneda según tu secuencia
+// Nueva moneda con animación (Parche 1.5)
 function nuevaMoneda(){
   if(indice >= posiciones.length) indice = 0;
   let pos = posiciones[indice];
@@ -138,7 +141,7 @@ function nuevaMoneda(){
 
 let monedaActual = nuevaMoneda();
 
-// Escucha las teclas
+// Detectar teclas - compatible celular con teclado virtual
 document.addEventListener('keydown', function(e){
   const eleccion = e.key.toUpperCase();
   if(!['L','C','R'].includes(eleccion)) return;
@@ -165,7 +168,7 @@ document.addEventListener('keydown', function(e){
   monedaActual = nuevaMoneda();
 });
 
-// Cargar configuración inicial
+// Aplicar configuración inicial
 aplicarTema();
 </script>
 </body>
