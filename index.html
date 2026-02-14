@@ -2,44 +2,56 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>¡Atrapa la Gaseosa Arcade! v5.0</title>
+<title>¡Atrapa la Gaseosa Arcade! Mega Update 6.0</title>
 <style>
-  body {
-    text-align: center;
-    font-family: sans-serif;
-    background: #222;
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-  h1 { color: #ffdd00; margin: 10px 0; }
-  #puntaje { font-size: 20px; margin: 10px; }
-  #mensaje { font-size: 20px; margin: 10px; }
-  .moneda, .diamante {
-    position: absolute;
-    font-size: 50px;
-    transition: transform 0.2s ease;
-  }
-  #menu {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
-    border-radius: 10px;
-  }
-  #menu button {
-    margin: 5px;
-    padding: 5px 10px;
-    font-size: 14px;
-    cursor: pointer;
-  }
+body {
+  margin:0;
+  padding:0;
+  font-family:sans-serif;
+  text-align:center;
+  background: linear-gradient(120deg,#222,#444);
+  color:#fff;
+  overflow:hidden;
+}
+h1 { color:#ffdd00; margin:10px 0; text-shadow: 2px 2px #000; }
+#puntaje { font-size:20px; margin:10px; }
+#mensaje { font-size:20px; margin:10px; }
+.moneda, .diamante, .boss {
+  position:absolute;
+  font-size:50px;
+  transition: transform 0.2s ease;
+}
+#menu {
+  position: fixed;
+  top:10px;
+  right:10px;
+  background: rgba(0,0,0,0.8);
+  border-radius:12px;
+  padding:10px;
+  z-index:1000;
+}
+#menu button {
+  margin:5px;
+  padding:5px 12px;
+  font-size:14px;
+  cursor:pointer;
+  border:none;
+  border-radius:5px;
+  background:#ffdd00;
+  color:#222;
+}
+.particula {
+  position:absolute;
+  font-size:20px;
+  opacity:1;
+  pointer-events:none;
+  transition: all 1s linear;
+}
 </style>
 </head>
 <body>
 
-<h1>¡Atrapa la Gaseosa Arcade! 🥤 v5.0</h1>
+<h1>¡Atrapa la Gaseosa Arcade! Mega Update 6.0 🥤</h1>
 <p id="puntaje">Pesos: 0 | Vidas: 5</p>
 <p id="mensaje">Presiona L, C o R para atrapar la moneda</p>
 
@@ -47,121 +59,122 @@
   <button onclick="triggerParty()">PARTY</button>
   <button onclick="clearMonedas()">CLEAR</button>
   <button onclick="triggerDiamonds()">RAIN DIAMONDS</button>
+  <button onclick="spawnBoss()">BOSS FIGHT</button>
 </div>
 
-<!-- Scripts -->
 <script>
-// ===== Variables Principales =====
-let pesos = 0;
-let vidas = 5;
-const opciones = ['L','C','R'];
-const puntajeEl = document.getElementById('puntaje');
-const mensajeEl = document.getElementById('mensaje');
-const menuEl = document.getElementById('menu');
-
-let secuenciaManual = []; // para control manual
+// ===== Variables =====
+let pesos=0, vidas=5;
+const opciones=['L','C','R'];
+let secuenciaManual = [];
 let indiceSecuencia = 0;
 let monedasActivas = [];
+let particulasActivas = [];
+let bossActivo=false;
+
+const puntajeEl=document.getElementById('puntaje');
+const mensajeEl=document.getElementById('mensaje');
+const menuEl=document.getElementById('menu');
 
 // ===== Sonidos =====
 const sonidoMoneda = new Audio('https://freesound.org/data/previews/341/341695_3248244-lq.mp3');
 const sonidoDiamante = new Audio('https://freesound.org/data/previews/274/274178_5121236-lq.mp3');
+const sonidoBoss = new Audio('https://freesound.org/data/previews/258/258020_4486188-lq.mp3');
 
-// ===== Funciones de Monedas =====
-function crearMoneda(pos, tipo="moneda") {
+// ===== Funciones =====
+function crearMoneda(pos,tipo="moneda"){
   const m = document.createElement('div');
-  m.className = tipo;
-  m.innerText = tipo === "moneda" ? "💰" : "💎";
+  m.className=tipo;
+  m.innerText=tipo==="moneda"?"💰":"💎";
   document.body.appendChild(m);
-  const posicionesX = {L: window.innerWidth*0.2, C: window.innerWidth*0.5, R: window.innerWidth*0.8};
-  m.style.left = posicionesX[pos] + "px";
-  m.style.top = "50px";
+
+  const posX={L:window.innerWidth*0.2,C:window.innerWidth*0.5,R:window.innerWidth*0.8};
+  m.style.left=posX[pos]+"px";
+  m.style.top="50px";
   monedasActivas.push(m);
 
-  // Animacion simple
-  setInterval(()=>{ m.style.transform = `rotate(${Math.random()*360}deg)`; }, 200);
+  setInterval(()=>{m.style.transform=`rotate(${Math.random()*360}deg)`;},200);
   return pos;
 }
 
-function nuevaMoneda() {
-  let pos = secuenciaManual.length > 0 ? secuenciaManual[indiceSecuencia] : opciones[Math.floor(Math.random()*3)];
-  if(secuenciaManual.length>0){
-    indiceSecuencia = (indiceSecuencia+1) % secuenciaManual.length;
-  }
+function nuevaMoneda(){
+  let pos=secuenciaManual.length>0 ? secuenciaManual[indiceSecuencia] : opciones[Math.floor(Math.random()*3)];
+  if(secuenciaManual.length>0) indiceSecuencia=(indiceSecuencia+1)%secuenciaManual.length;
   return crearMoneda(pos);
 }
 
-// ===== Comando Admin CODMAS =====
-document.addEventListener('keydown', function(e){
-  const key = e.key.toUpperCase();
-  
-  if(key === "CODMAS"){ 
-    menuEl.style.display = menuEl.style.display === "none" ? "block" : "none";
-    return;
-  }
+// ===== Particulas =====
+function spawnParticula(x,y,char){
+  const p=document.createElement('div');
+  p.className='particula';
+  p.innerText=char;
+  document.body.appendChild(p);
+  p.style.left=x+'px';
+  p.style.top=y+'px';
+  particulasActivas.push(p);
+  setTimeout(()=>{p.remove(); particulasActivas.shift();},1000);
+}
 
+// ===== Admin CODMAS =====
+document.addEventListener('keydown',function(e){
+  const key=e.key.toUpperCase();
+  if(key==='CODMAS'){menuEl.style.display=menuEl.style.display==='none'?'block':'none'; return;}
   if(!opciones.includes(key)) return;
 
-  // Revisar moneda actual
   const monedaActual = monedasActivas[0] ? monedasActivas[0].innerText : null;
-  if((key === 'L' && monedaActual.includes('L')) || 
-     (key === 'C' && monedaActual.includes('C')) || 
-     (key === 'R' && monedaActual.includes('R')) ) {
+  const monedaX = monedasActivas[0] ? monedasActivas[0].offsetLeft : 0;
+  const monedaY = monedasActivas[0] ? monedasActivas[0].offsetTop : 0;
+
+  if((key==='L'&&monedaActual.includes('L'))||(key==='C'&&monedaActual.includes('C'))||(key==='R'&&monedaActual.includes('R'))){
     pesos++;
-    mensajeEl.innerText = `¡Atrapaste la moneda en ${key}!`;
-    if(monedasActivas[0]) { monedasActivas[0].remove(); monedasActivas.shift(); }
+    mensajeEl.innerText=`¡Atrapaste la moneda en ${key}!`;
+    if(monedasActivas[0]){monedasActivas[0].remove(); monedasActivas.shift();}
     sonidoMoneda.play();
-  } else {
+    spawnParticula(monedaX,monedaY,'✨');
+  }else{
     vidas--;
-    mensajeEl.innerText = `Fallaste, intenta de nuevo.`;
-  }
-  puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
-
-  if(pesos >= 7){
-    alert('¡Felicidades! Ganaste tu gaseosa 🥤');
-    resetJuego();
-  } else if(vidas <= 0){
-    alert('Perdiste todas tus vidas 😢');
-    resetJuego();
+    mensajeEl.innerText=`Fallaste, intenta de nuevo.`;
   }
 
-  if(monedasActivas.length === 0) nuevaMoneda();
+  puntajeEl.innerText=`Pesos: ${pesos} | Vidas: ${vidas}`;
+  if(pesos>=7){alert('¡Felicidades! Ganaste tu gaseosa 🥤'); resetJuego();}
+  else if(vidas<=0){alert('Perdiste todas tus vidas 😢'); resetJuego();}
+  if(monedasActivas.length===0) nuevaMoneda();
 });
 
-// ===== Funciones Eventos =====
-function triggerParty(){
-  for(let i=0;i<10;i++){
-    const pos = opciones[Math.floor(Math.random()*3)];
-    crearMoneda(pos);
-  }
-}
+// ===== Eventos =====
+function triggerParty(){for(let i=0;i<10;i++){crearMoneda(opciones[Math.floor(Math.random()*3)]);}}
+function clearMonedas(){monedasActivas.forEach(m=>m.remove()); monedasActivas=[];}
+function triggerDiamonds(){for(let i=0;i<5;i++){crearMoneda(opciones[Math.floor(Math.random()*3)],'diamante'); sonidoDiamante.play();}}
 
-function clearMonedas(){
-  monedasActivas.forEach(m=>m.remove());
-  monedasActivas = [];
-}
+// ===== Boss Fight =====
+function spawnBoss(){
+  if(bossActivo) return;
+  bossActivo=true;
+  const b=document.createElement('div');
+  b.className='boss';
+  b.innerText='👹';
+  document.body.appendChild(b);
+  b.style.left='50%';
+  b.style.top='20px';
+  b.style.fontSize='80px';
+  sonidoBoss.play();
 
-function triggerDiamonds(){
-  for(let i=0;i<5;i++){
-    const pos = opciones[Math.floor(Math.random()*3)];
-    crearMoneda(pos,"diamante");
-    sonidoDiamante.play();
-  }
+  let moveDir=1;
+  const interval=setInterval(()=>{
+    const left = parseInt(b.style.left);
+    if(left>=window.innerWidth-100 || left<=0) moveDir*=-1;
+    b.style.left=(left+10*moveDir)+'px';
+  },200);
+
+  setTimeout(()=>{clearInterval(interval); b.remove(); bossActivo=false;},10000);
 }
 
 // ===== Reset =====
-function resetJuego(){
-  pesos = 0;
-  vidas = 5;
-  puntajeEl.innerText = `Pesos: ${pesos} | Vidas: ${vidas}`;
-  mensajeEl.innerText = 'Presiona L, C o R para atrapar la moneda';
-  clearMonedas();
-  nuevaMoneda();
-}
+function resetJuego(){pesos=0; vidas=5; puntajeEl.innerText=`Pesos: ${pesos} | Vidas: ${vidas}`; mensajeEl.innerText='Presiona L, C o R para atrapar la moneda'; clearMonedas(); nuevaMoneda();}
 
 // ===== Inicio =====
 nuevaMoneda();
-
 </script>
 </body>
 </html>
