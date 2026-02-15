@@ -1,1 +1,1 @@
-
+ownerSend("Tu mensaje aquí");
