@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda 3.0</title>
+<title>Atrapa la Moneda 4.0</title>
 <style>
   body{
     margin:0;
@@ -38,23 +38,22 @@
   }
   .fallingCoin, .diamond, .bossCoin{
     position:absolute;
-    font-size:40px;
     top:-50px;
     user-select:none;
     pointer-events:none;
   }
+  .fallingCoin{ font-size:40px; animation:caer linear forwards;}
+  .diamond{ font-size:35px; animation:caer linear forwards;}
+  .bossCoin{ font-size:50px; animation:caer linear forwards;}
   @keyframes caer{
     0% {top:-50px; opacity:1;}
     100% {top:90vh; opacity:0;}
   }
-  .fallingCoin{ animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
-  .diamond{ font-size:35px; animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
-  .bossCoin{ font-size:50px; animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
 </style>
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA 3.0</h1>
+<h1>🎮 ATRAPA LA MONEDA 4.0</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR JUEGO</button>
@@ -72,6 +71,7 @@
   <button onclick="comandoParty()">Party</button>
   <button onclick="comandoRainDiamonds()">Rain Diamonds</button>
   <button onclick="comandoBoss()">Boss Event</button>
+  <button onclick="comandoVidaInfinita()">Vida Infinita</button>
   <button onclick="cerrarAdminPanel()">Cerrar Panel</button>
 </div>
 
@@ -80,6 +80,7 @@
 let pesos = 0, vidas = 5, record = localStorage.getItem("record") || 0;
 let secuencia = ["R","L","C","L","R","C","R"], indice = 0;
 let monedaActual = "", velocidad = 1500, intervalo;
+let vidaInfinita = false;
 
 const monedaEl = document.getElementById("moneda");
 const statsEl = document.getElementById("stats");
@@ -97,7 +98,7 @@ function iniciar(){
 
 // RESET GAME
 function resetGame(){
-  pesos=0; vidas=5; velocidad=1500; indice=0;
+  pesos=0; vidas=5; velocidad=1500; indice=0; vidaInfinita=false;
   actualizarStats();
   nuevaMoneda();
   clearInterval(intervalo);
@@ -114,13 +115,14 @@ function nuevaMoneda(){
 
 // ACTUALIZAR STATS
 function actualizarStats(){
-  statsEl.innerText="Pesos: "+pesos+" | Vidas: "+vidas+" | Récord: "+record;
+  statsEl.innerText="Pesos: "+pesos+" | Vidas: "+(vidaInfinita?"∞":vidas)+" | Récord: "+record;
 }
 
 // TIEMPO AGOTADO
 function tiempoAgotado(){
-  vidas--; actualizarStats();
-  if(vidas<=0){ gameOver(); return;}
+  if(!vidaInfinita) vidas--;
+  actualizarStats();
+  if(vidas<=0 && !vidaInfinita){ gameOver(); return;}
   nuevaMoneda();
 }
 
@@ -141,9 +143,11 @@ document.addEventListener("keydown", function(e){
     velocidad-=50; if(velocidad<500) velocidad=500;
     clearInterval(intervalo);
     intervalo=setInterval(tiempoAgotado, velocidad);
-  }else{ vidas--; }
+  }else{
+    if(!vidaInfinita) vidas--;
+  }
   actualizarStats();
-  if(vidas<=0){ gameOver(); return;}
+  if(vidas<=0 && !vidaInfinita){ gameOver(); return;}
   nuevaMoneda();
 });
 
@@ -195,11 +199,17 @@ function comandoBoss(){
   } actualizarStats();
 }
 
+// COMANDO ESPECIAL SOLO OWNER: VIDA INFINITA
+function comandoVidaInfinita(){
+  vidaInfinita = true;
+  mostrarMensaje("Modo Vida Infinita Activado! ♾️");
+  actualizarStats();
+}
+
 // FUNCION DE MENSAJES
 function mostrarMensaje(texto){
   alert(texto);
 }
-
 </script>
 
 </body>
