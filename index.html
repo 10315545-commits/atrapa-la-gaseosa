@@ -2,125 +2,93 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda Mega Owner</title>
+<title>Atrapa la Moneda 3.0</title>
 <style>
-body{
-  margin:0;
-  background:#0f0f0f;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  overflow:hidden;
-}
-h1{
-  color:#ff00ff;
-  text-shadow:0 0 15px #ff00ff, 0 0 30px #ff00ff;
-}
-button{
-  padding:10px 20px;
-  font-size:18px;
-  background:#ff00ff;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  color:#fff;
-  text-shadow:0 0 5px #fff;
-}
-#game, #adminPanel, #ownerPanel{ display:none; }
-#moneda{
-  font-size:80px;
-  margin:20px;
-  transition: transform 0.2s;
-  position: relative;
-  z-index: 2;
-}
-#moneda.anim{ transform: scale(1.5); }
-.info{ font-size:20px; margin:10px; }
-
-.fallingCoin, .diamond, .bossCoin{
-  position:absolute;
-  font-size:30px;
-  top:-50px;
-  animation-name:falling;
-  animation-timing-function: linear;
-  animation-duration: 3s;
-}
-.diamond{ color: #00ffff; font-size:25px; }
-.bossCoin{ color: gold; font-size:35px; }
-
-@keyframes falling {
-  0%{ top:-50px; }
-  100%{ top:100vh; }
-}
+  body{
+    margin:0;
+    background:#0f0f0f;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    overflow-x:hidden;
+  }
+  h1{
+    color:#00ffcc;
+    text-shadow:0 0 10px #00ffcc;
+  }
+  button{
+    padding:10px 20px;
+    font-size:18px;
+    background:#00ffcc;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin:5px;
+  }
+  #game, #adminPanel{
+    display:none;
+  }
+  #moneda{
+    font-size:80px;
+    margin:20px;
+  }
+  .info{
+    font-size:20px;
+    margin:10px;
+  }
+  .fallingCoin, .diamond, .bossCoin{
+    position:absolute;
+    font-size:40px;
+    top:-50px;
+    user-select:none;
+    pointer-events:none;
+  }
+  @keyframes caer{
+    0% {top:-50px; opacity:1;}
+    100% {top:90vh; opacity:0;}
+  }
+  .fallingCoin{ animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
+  .diamond{ font-size:35px; animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
+  .bossCoin{ font-size:50px; animation-name:caer; animation-timing-function:linear; animation-fill-mode:forwards;}
 </style>
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA OWNER</h1>
+<h1>🎮 ATRAPA LA MONEDA 3.0</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR JUEGO</button>
-  <button onclick="abrirAdmin()">ADMIN PANEL</button>
-  <button onclick="abrirOwner()">OWNER PANEL</button>
+  <button onclick="mostrarAdminPanel()">ADMIN PANEL</button>
 </div>
 
 <div id="game">
   <h2 id="moneda">❓</h2>
-  <p>Presiona L, C o R o toca la moneda</p>
+  <p>Presiona L, C o R</p>
   <div class="info" id="stats"></div>
 </div>
 
 <div id="adminPanel">
-  <h2>Admin Panel</h2>
-  <button onclick="comandoParty()">Party 🎉</button>
-  <button onclick="comandoClear()">Clear 🧹</button>
-  <button onclick="comandoRainDiamonds()">Rain Diamonds 💎</button>
-  <button onclick="comandoBoss()">Boss Event 👑</button>
-  <button onclick="cerrarAdmin()">Cerrar Panel</button>
+  <h2>⚡ ADMIN PANEL ⚡</h2>
+  <button onclick="comandoParty()">Party</button>
+  <button onclick="comandoRainDiamonds()">Rain Diamonds</button>
+  <button onclick="comandoBoss()">Boss Event</button>
+  <button onclick="cerrarAdminPanel()">Cerrar Panel</button>
 </div>
-
-<div id="ownerPanel">
-  <h2>Owner Panel 🔒</h2>
-  <div>
-    <label>Clave secreta: </label>
-    <input type="password" id="ownerPass">
-    <button onclick="verificarOwner()">Entrar</button>
-  </div>
-  <div id="configPanel" style="display:none;">
-    <h3>Configuración del Juego</h3>
-    <label>Velocidad Inicial: </label><input type="number" id="velInicial" value="1500"><br>
-    <label>Vidas Iniciales: </label><input type="number" id="vidasInicial" value="5"><br>
-    <label>Color de Menú: </label><input type="color" id="menuColor" value="#ff00ff"><br>
-    <label>Animación Moneda:</label><input type="checkbox" id="animMoneda" checked><br>
-    <button onclick="guardarConfig()">Guardar Configuración</button>
-
-    <h3>Versiones Antiguas</h3>
-    <button onclick="cargarVersion(1)">Versión 1.0</button>
-    <button onclick="cargarVersion(1.5)">Versión 1.5</button>
-    <button onclick="cargarVersion(2.0)">Versión 2.0</button>
-    <button onclick="cargarVersion(3.0)">Versión 3.0</button>
-  </div>
-  <button onclick="cerrarOwner()">Cerrar Owner</button>
-</div>
-
-<audio id="coinSound" src="https://freesound.org/data/previews/341/341695_5260870-lq.mp3"></audio>
-<audio id="bossSound" src="https://freesound.org/data/previews/331/331912_3248244-lq.mp3"></audio>
 
 <script>
+// VARIABLES PRINCIPALES
 let pesos = 0, vidas = 5, record = localStorage.getItem("record") || 0;
-let secuencia = ["R","L","C","L","R","C","R"], indice = 0, monedaActual="", velocidad = 1500, intervalo;
-const monedaEl = document.getElementById("moneda"), statsEl = document.getElementById("stats");
-const coinSound = document.getElementById("coinSound"), bossSound = document.getElementById("bossSound");
+let secuencia = ["R","L","C","L","R","C","R"], indice = 0;
+let monedaActual = "", velocidad = 1500, intervalo;
 
-// CONFIG
-let config = {
-  velocidadInicial: 1500,
-  vidasInicial: 5,
-  colorMenu: "#ff00ff",
-  animacionMoneda: true
-};
+const monedaEl = document.getElementById("moneda");
+const statsEl = document.getElementById("stats");
 
-// INICIO
+// SONIDOS
+const coinSound = new Audio("https://freesound.org/data/previews/341/341695_62435-lq.mp3");
+const bossSound = new Audio("https://freesound.org/data/previews/331/331912_3248240-lq.mp3");
+
+// INICIAR JUEGO
 function iniciar(){
   document.getElementById("menu").style.display="none";
   document.getElementById("game").style.display="block";
@@ -129,7 +97,7 @@ function iniciar(){
 
 // RESET GAME
 function resetGame(){
-  pesos=0; vidas=config.vidasInicial; velocidad=config.velocidadInicial; indice=0;
+  pesos=0; vidas=5; velocidad=1500; indice=0;
   actualizarStats();
   nuevaMoneda();
   clearInterval(intervalo);
@@ -140,94 +108,98 @@ function resetGame(){
 function nuevaMoneda(){
   monedaActual = secuencia[indice];
   monedaEl.innerText = monedaActual;
-  if(config.animacionMoneda){
-    monedaEl.classList.add("anim");
-    setTimeout(()=> monedaEl.classList.remove("anim"),200);
-  }
-  indice = (indice + 1) % secuencia.length;
+  indice++; if(indice >= secuencia.length) indice=0;
+  crearMonedaCayendo("💰");
 }
 
-// STATS
+// ACTUALIZAR STATS
 function actualizarStats(){
-  statsEl.innerText = "Pesos: " + pesos + " | Vidas: " + vidas + " | Récord: " + record;
+  statsEl.innerText="Pesos: "+pesos+" | Vidas: "+vidas+" | Récord: "+record;
 }
 
 // TIEMPO AGOTADO
-function tiempoAgotado(){ vidas--; actualizarStats(); if(vidas<=0) gameOver(); nuevaMoneda(); }
+function tiempoAgotado(){
+  vidas--; actualizarStats();
+  if(vidas<=0){ gameOver(); return;}
+  nuevaMoneda();
+}
 
 // GAME OVER
 function gameOver(){
   clearInterval(intervalo);
-  if(pesos>record){ record=pesos; localStorage.setItem("record",record); }
-  alert("GAME OVER\nPuntaje: " + pesos);
+  if(pesos>record){ record=pesos; localStorage.setItem("record",record);}
+  alert("GAME OVER\nPuntaje: "+pesos);
   resetGame();
 }
 
-// ATRAPAR MONEDA
-function atraparMoneda(){
-  pesos++;
-  coinSound.currentTime=0; coinSound.play();
-  velocidad=Math.max(500,velocidad-50);
-  clearInterval(intervalo);
-  intervalo=setInterval(tiempoAgotado,velocidad);
-  crearMonedaCayendo("💰");
-}
-
-// TECLADO
-document.addEventListener("keydown", e=>{
+// TECLAS
+document.addEventListener("keydown", function(e){
   const eleccion=e.key.toUpperCase();
   if(!["L","C","R"].includes(eleccion)) return;
-  if(eleccion===monedaActual) atraparMoneda(); else vidas--;
+  if(eleccion===monedaActual){
+    pesos++; coinSound.play();
+    velocidad-=50; if(velocidad<500) velocidad=500;
+    clearInterval(intervalo);
+    intervalo=setInterval(tiempoAgotado, velocidad);
+  }else{ vidas--; }
   actualizarStats();
-  if(vidas<=0) gameOver();
+  if(vidas<=0){ gameOver(); return;}
   nuevaMoneda();
 });
 
-// CELULAR
-monedaEl.addEventListener("click", ()=>{
-  atraparMoneda();
-  nuevaMoneda();
-});
-
-// MONEDAS CAYENDO
+// ANIMACION DE MONEDAS
 function crearMonedaCayendo(simbolo){
-  const coin=document.createElement("div");
-  coin.className="fallingCoin"; coin.innerText=simbolo;
-  coin.style.left=Math.random()*90+"vw";
-  coin.style.animationDuration=(2+Math.random()*2)+"s";
-  document.body.appendChild(coin);
-  setTimeout(()=>coin.remove(),3000);
+  const c = document.createElement("div");
+  c.className="fallingCoin";
+  c.innerText = simbolo;
+  c.style.left=Math.random()*90+"vw";
+  c.style.animationDuration=(2+Math.random()*1.5)+"s";
+  document.body.appendChild(c);
+  setTimeout(()=>c.remove(),3000);
 }
 
 // ADMIN PANEL
-function abrirAdmin(){ document.getElementById("adminPanel").style.display="block"; }
-function cerrarAdmin(){ document.getElementById("adminPanel").style.display="none"; }
-function comandoParty(){ for(let i=0;i<20;i++) crearMonedaCayendo("💰"); }
-function comandoClear(){ document.querySelectorAll(".fallingCoin, .diamond, .bossCoin").forEach(el=>el.remove()); }
-function comandoRainDiamonds(){ for(let i=0;i<30;i++){ const d=document.createElement("div"); d.className="diamond"; d.innerText="💎"; d.style.left=Math.random()*90+"vw"; d.style.animationDuration=(2+Math.random()*2)+"s"; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); } }
-function comandoBoss(){ bossSound.currentTime=0; bossSound.play(); for(let i=0;i<50;i++){ const b=document.createElement("div"); b.className="bossCoin"; b.innerText="👑"; b.style.left=Math.random()*90+"vw"; b.style.animationDuration=(1.5+Math.random()*2)+"s"; document.body.appendChild(b); setTimeout(()=>b.remove(),4000); } }
+function mostrarAdminPanel(){ document.getElementById("adminPanel").style.display="block"; }
+function cerrarAdminPanel(){ document.getElementById("adminPanel").style.display="none"; }
 
-// OWNER PANEL
-function abrirOwner(){ document.getElementById("ownerPanel").style.display="block"; }
-function cerrarOwner(){ document.getElementById("ownerPanel").style.display="none"; }
-
-function verificarOwner(){
-  const pass=document.getElementById("ownerPass").value;
-  if(pass==="admin123"){ document.getElementById("configPanel").style.display="block"; alert("Bienvenido Owner"); } else alert("Clave incorrecta");
+// EVENTOS ADMIN QUE SUMAN MONEDAS
+function comandoParty(){
+  for(let i=0;i<20;i++){
+    crearMonedaCayendo("💰");
+    pesos++;
+  } actualizarStats();
 }
 
-function guardarConfig(){
-  config.velocidadInicial=parseInt(document.getElementById("velInicial").value);
-  config.vidasInicial=parseInt(document.getElementById("vidasInicial").value);
-  config.colorMenu=document.getElementById("menuColor").value;
-  config.animacionMoneda=document.getElementById("animMoneda").checked;
-  document.querySelectorAll("button").forEach(b=>b.style.background=config.colorMenu);
-  alert("Configuración guardada");
+function comandoRainDiamonds(){
+  for(let i=0;i<30;i++){
+    const d = document.createElement("div");
+    d.className="diamond"; d.innerText="💎";
+    d.style.left=Math.random()*90+"vw";
+    d.style.animationDuration=(2+Math.random()*2)+"s";
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),3000);
+    pesos+=2;
+  } actualizarStats();
 }
 
-function cargarVersion(ver){
-  alert("Cargando versión "+ver+"\n(En esta demo solo se simula, reemplaza con tu código de versión antigua)");
+function comandoBoss(){
+  bossSound.currentTime=0; bossSound.play();
+  for(let i=0;i<50;i++){
+    const b = document.createElement("div");
+    b.className="bossCoin"; b.innerText="👑";
+    b.style.left=Math.random()*90+"vw";
+    b.style.animationDuration=(1.5+Math.random()*2)+"s";
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(),4000);
+    pesos+=5;
+  } actualizarStats();
 }
+
+// FUNCION DE MENSAJES
+function mostrarMensaje(texto){
+  alert(texto);
+}
+
 </script>
 
 </body>
