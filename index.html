@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda 5.0</title>
+<title>Atrapa la Moneda 5.1 – Owner Only</title>
 <style>
   body{
     margin:0;
@@ -28,7 +28,7 @@
     font-weight:bold;
     box-shadow:0 0 10px #ff44cc;
   }
-  #game, #adminPanel, #historialPanel{
+  #game, #adminPanel{
     display:none;
   }
   #moneda{
@@ -56,12 +56,11 @@
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA 5.0</h1>
+<h1>🎮 ATRAPA LA MONEDA 5.1</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR JUEGO</button>
-  <button onclick="mostrarAdminPanel()">ADMIN PANEL</button>
-  <button onclick="mostrarHistorial()">HISTORIAL DE VERSIONES</button>
+  <button onclick="pedirClaveOwner()">ADMIN LOGIN</button>
 </div>
 
 <div id="game">
@@ -77,18 +76,6 @@
   <button onclick="comandoBoss()">Boss Event</button>
   <button onclick="comandoVidaInfinita()">Vida Infinita</button>
   <button onclick="cerrarAdminPanel()">Cerrar Panel</button>
-</div>
-
-<div id="historialPanel">
-  <h2>📜 HISTORIAL DE VERSIONES</h2>
-  <ul>
-    <li>Beta 1 – Primeras animaciones básicas</li>
-    <li>Update 1.0 – Monedas cayendo</li>
-    <li>Update 2.0 – Sonidos y velocidad dinámica</li>
-    <li>Update 3.0 – Admin Panel y eventos</li>
-    <li>Update 4.0 – Vida infinita y boss coins</li>
-  </ul>
-  <button onclick="cerrarHistorial()">Cerrar Historial</button>
 </div>
 
 <script>
@@ -179,54 +166,26 @@ function crearMonedaCayendo(simbolo){
   setTimeout(()=>c.remove(),3000);
 }
 
-// ADMIN PANEL
+// ADMIN PANEL SOLO OWNER
+function pedirClaveOwner(){
+  const clave = prompt("Introduce la clave del Owner:");
+  if(clave==="1234"){ // <-- Cambia por tu clave segura
+    mostrarAdminPanel();
+  } else{
+    alert("Clave incorrecta");
+  }
+}
 function mostrarAdminPanel(){ document.getElementById("adminPanel").style.display="block"; }
 function cerrarAdminPanel(){ document.getElementById("adminPanel").style.display="none"; }
 
-// EVENTOS ADMIN QUE SUMAN MONEDAS
-function comandoParty(){
-  for(let i=0;i<20;i++){ crearMonedaCayendo("💰"); pesos++; }
-  actualizarStats();
-}
+// EVENTOS ADMIN
+function comandoParty(){ for(let i=0;i<20;i++){ crearMonedaCayendo("💰"); pesos++; } actualizarStats(); }
+function comandoRainDiamonds(){ for(let i=0;i<30;i++){ const d=document.createElement("div"); d.className="diamond"; d.innerText="💎"; d.style.left=Math.random()*90+"vw"; d.style.animationDuration=(2+Math.random()*2)+"s"; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); pesos+=2;} actualizarStats();}
+function comandoBoss(){ bossSound.currentTime=0; bossSound.play(); for(let i=0;i<50;i++){ const b=document.createElement("div"); b.className="bossCoin"; b.innerText="👑"; b.style.left=Math.random()*90+"vw"; b.style.animationDuration=(1.5+Math.random()*2)+"s"; document.body.appendChild(b); setTimeout(()=>b.remove(),4000); pesos+=5;} actualizarStats();}
+function comandoVidaInfinita(){ vidaInfinita=true; mostrarMensaje("Modo Vida Infinita Activado! ♾️"); actualizarStats(); }
 
-function comandoRainDiamonds(){
-  for(let i=0;i<30;i++){
-    const d = document.createElement("div");
-    d.className="diamond"; d.innerText="💎";
-    d.style.left=Math.random()*90+"vw";
-    d.style.animationDuration=(2+Math.random()*2)+"s";
-    document.body.appendChild(d);
-    setTimeout(()=>d.remove(),3000);
-    pesos+=2;
-  } actualizarStats();
-}
-
-function comandoBoss(){
-  bossSound.currentTime=0; bossSound.play();
-  for(let i=0;i<50;i++){
-    const b = document.createElement("div");
-    b.className="bossCoin"; b.innerText="👑";
-    b.style.left=Math.random()*90+"vw";
-    b.style.animationDuration=(1.5+Math.random()*2)+"s";
-    document.body.appendChild(b);
-    setTimeout(()=>b.remove(),4000);
-    pesos+=5;
-  } actualizarStats();
-}
-
-// COMANDO ESPECIAL SOLO OWNER: VIDA INFINITA
-function comandoVidaInfinita(){
-  vidaInfinita = true;
-  mostrarMensaje("Modo Vida Infinita Activado! ♾️");
-  actualizarStats();
-}
-
-// FUNCION DE MENSAJES
+// MENSAJES
 function mostrarMensaje(texto){ alert(texto); }
-
-// HISTORIAL DE VERSIONES (solo Owner)
-function mostrarHistorial(){ document.getElementById("historialPanel").style.display="block"; }
-function cerrarHistorial(){ document.getElementById("historialPanel").style.display="none"; }
 
 </script>
 
