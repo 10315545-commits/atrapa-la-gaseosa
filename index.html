@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda V7.0</title>
+<title>Atrapa la Moneda V8.0</title>
 <style>
   body{
     margin:0;
-    background: linear-gradient(to bottom,#0f0f0f,#111111);
+    background: linear-gradient(to bottom,#0f0f0f,#1a1a2e);
     color:white;
     font-family: Arial, sans-serif;
     text-align:center;
@@ -14,7 +14,7 @@
   }
   h1{
     color:#00ffcc;
-    text-shadow:0 0 15px #00ffcc, 0 0 25px #00ffaa;
+    text-shadow:0 0 15px #00ffcc,0 0 25px #00ffaa;
   }
   button{
     padding:10px 20px;
@@ -36,7 +36,7 @@
   }
   #game, #adminPanel{
     display:none;
-    background: linear-gradient(to bottom,#111111,#222233);
+    background: linear-gradient(to bottom,#111122,#222244);
     padding:15px;
     border-radius:12px;
     box-shadow:0 0 15px #00ffcc;
@@ -66,13 +66,8 @@
     80% {top:80vh; transform:translateY(-10px);}
     100% {top:85vh; opacity:0; transform:translateY(0);}
   }
-  .tabButton.active{
-    background: #00ffcc;
-    color: #0f0f0f;
-    box-shadow:0 0 15px #00ffcc;
-  }
   #eventHistory{
-    max-height:150px;
+    max-height:180px;
     overflow-y:auto;
     border:1px solid #00ffcc;
     margin-top:5px;
@@ -81,6 +76,15 @@
     text-align:left;
     background:#111122;
     border-radius:8px;
+  }
+  .eventItem{
+    cursor:pointer;
+    margin:2px 0;
+  }
+  .eventItem:hover{
+    background:#00ffcc;
+    color:#0f0f0f;
+    border-radius:5px;
   }
 </style>
 </head>
@@ -109,7 +113,7 @@
 </div>
 
 <audio id="coinSound" src="https://freesound.org/data/previews/341/341695_624578-lq.mp3"></audio>
-<audio id="eventSound" src="https://freesound.org/data/previews/198/198841_2859972-lq.mp3"></audio>
+<audio id="bossSound" src="https://freesound.org/data/previews/186/186942_351137-lq.mp3"></audio>
 <audio id="diamondSound" src="https://freesound.org/data/previews/276/276020_5121236-lq.mp3"></audio>
 
 <script>
@@ -129,11 +133,11 @@ const adminPanel = document.getElementById("adminPanel");
 const eventHistory = document.getElementById("eventHistory");
 
 const coinSound = document.getElementById("coinSound");
-const eventSound = document.getElementById("eventSound");
+const bossSound = document.getElementById("bossSound");
 const diamondSound = document.getElementById("diamondSound");
 
 // Owner info
-const ownerClass = "ruler"; // solo el owner puede abrir admin
+const ownerClass = "ruler"; 
 
 function iniciar(){
   document.getElementById("menu").style.display="none";
@@ -207,12 +211,16 @@ document.addEventListener("keydown", function(e){
 // --- Animaciones ---
 function crearMoneda(tipo){
   const coin = document.createElement("div");
-  coin.className = tipo === "C" ? "fallingCoin" : tipo==="R" ? "bossCoin" : "fallingCoin";
+  coin.className = tipo==="C" ? "fallingCoin" : tipo==="R" ? "bossCoin" : "fallingCoin";
   coin.style.left = Math.random()*90+"vw";
   coin.innerText = tipo==="R" ? "💰" : "🪙";
   coin.style.animationDuration = (2 + Math.random()*1) + "s";
   document.body.appendChild(coin);
-  setTimeout(()=>coin.remove(),3500);
+  setTimeout(()=>{
+    coin.remove();
+    if(tipo==="R") bossSound.play();
+    else coinSound.play();
+  },3500);
 }
 
 // --- Admin Panel ---
@@ -227,12 +235,12 @@ function triggerEvent(event, isAdmin=false){
     for(let i=0;i<10;i++) crearMoneda("C");
     pesos += isAdmin ? 10 : 5;
     eventSound.play();
-    logEvent("Evento Party activado +" + (isAdmin?10:5) + " monedas");
+    logEvent("Party activado +" + (isAdmin?10:5) + " monedas", isAdmin);
   }
   if(event === "clear"){
     const coins = document.querySelectorAll(".fallingCoin,.diamond,.bossCoin");
     coins.forEach(c=>c.remove());
-    logEvent("Monedas limpiadas");
+    logEvent("Monedas limpiadas", true);
   }
   if(event === "rainDiamonds"){
     for(let i=0;i<15;i++){
@@ -246,21 +254,29 @@ function triggerEvent(event, isAdmin=false){
     }
     pesos += isAdmin ? 20 : 10;
     diamondSound.play();
-    logEvent("Evento Rain Diamonds activado +" + (isAdmin?20:10) + " monedas");
+    logEvent("Rain Diamonds activado +" + (isAdmin?20:10) + " monedas", isAdmin);
   }
 }
 
-function toggleInfiniteLife(){
-  infiniteLife = !infiniteLife;
-  logEvent("Vida infinita " + (infiniteLife?"activada":"desactivada"));
-  actualizarStats();
-}
-
-function logEvent(msg){
+// Historial con click para revivir
+function logEvent(msg,isPrivate=false){
   const p = document.createElement("p");
   p.innerText = msg;
+  p.className = "eventItem";
+  p.onclick = ()=>{ 
+    if(msg.includes("Party")) for(let i=0;i<5;i++) crearMoneda("C");
+    if(msg.includes("Rain Diamonds")) for(let i=0;i<5;i++) crearMoneda("diamond");
+  };
+  if(isPrivate) p.style.color="#ff88ff";
   eventHistory.appendChild(p);
   eventHistory.scrollTop = eventHistory.scrollHeight;
+}
+
+// Vida infinita toggle
+function toggleInfiniteLife(){
+  infiniteLife = !infiniteLife;
+  logEvent("Vida infinita " + (infiniteLife?"activada":"desactivada"), true);
+  actualizarStats();
 }
 </script>
 </body>
