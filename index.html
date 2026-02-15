@@ -1,8 +1,7 @@
-<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda 5.1 – Owner Only</title>
+<title>Atrapa la Moneda – Owner Only</title>
 <style>
   body{
     margin:0;
@@ -56,11 +55,11 @@
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA 5.1</h1>
+<h1>🎮 ATRAPA LA MONEDA</h1>
 
 <div id="menu">
   <button onclick="iniciar()">INICIAR JUEGO</button>
-  <button onclick="pedirClaveOwner()">ADMIN LOGIN</button>
+  <button onclick="pedirClaseAdmin()">ADMIN LOGIN</button>
 </div>
 
 <div id="game">
@@ -71,6 +70,7 @@
 
 <div id="adminPanel">
   <h2>⚡ ADMIN PANEL ⚡</h2>
+  <p>Clase: <span id="adminClase"></span></p>
   <button onclick="comandoParty()">Party</button>
   <button onclick="comandoRainDiamonds()">Rain Diamonds</button>
   <button onclick="comandoBoss()">Boss Event</button>
@@ -84,10 +84,12 @@ let pesos = 0, vidas = 5, record = localStorage.getItem("record") || 0;
 let secuencia = ["R","L","C","L","R","C","R"], indice = 0;
 let monedaActual = "", velocidad = 1500, intervalo;
 let vidaInfinita = false;
+let claseAdmin = "";
 
 // ELEMENTOS
 const monedaEl = document.getElementById("moneda");
 const statsEl = document.getElementById("stats");
+const adminClaseEl = document.getElementById("adminClase");
 
 // SONIDOS
 const coinSound = new Audio("https://freesound.org/data/previews/341/341695_62435-lq.mp3");
@@ -167,12 +169,14 @@ function crearMonedaCayendo(simbolo){
 }
 
 // ADMIN PANEL SOLO OWNER
-function pedirClaveOwner(){
-  const clave = prompt("Introduce la clave del Owner:");
-  if(clave==="1234"){ // <-- Cambia por tu clave segura
+function pedirClaseAdmin(){
+  const clave = prompt("Introduce la clave de tu clase admin:");
+  if(clave==="ruler admin"){ // <-- Tu clase personalizada
+    claseAdmin = clave;
+    adminClaseEl.innerText = claseAdmin;
     mostrarAdminPanel();
   } else{
-    alert("Clave incorrecta");
+    alert("Clase incorrecta");
   }
 }
 function mostrarAdminPanel(){ document.getElementById("adminPanel").style.display="block"; }
@@ -182,7 +186,7 @@ function cerrarAdminPanel(){ document.getElementById("adminPanel").style.display
 function comandoParty(){ for(let i=0;i<20;i++){ crearMonedaCayendo("💰"); pesos++; } actualizarStats(); }
 function comandoRainDiamonds(){ for(let i=0;i<30;i++){ const d=document.createElement("div"); d.className="diamond"; d.innerText="💎"; d.style.left=Math.random()*90+"vw"; d.style.animationDuration=(2+Math.random()*2)+"s"; document.body.appendChild(d); setTimeout(()=>d.remove(),3000); pesos+=2;} actualizarStats();}
 function comandoBoss(){ bossSound.currentTime=0; bossSound.play(); for(let i=0;i<50;i++){ const b=document.createElement("div"); b.className="bossCoin"; b.innerText="👑"; b.style.left=Math.random()*90+"vw"; b.style.animationDuration=(1.5+Math.random()*2)+"s"; document.body.appendChild(b); setTimeout(()=>b.remove(),4000); pesos+=5;} actualizarStats();}
-function comandoVidaInfinita(){ vidaInfinita=true; mostrarMensaje("Modo Vida Infinita Activado! ♾️"); actualizarStats(); }
+function comandoVidaInfinita(){ vidaInfinita=true; mostrarMensaje("Modo Vida Infinita Activado! ♾️"); actualizarStats();}
 
 // MENSAJES
 function mostrarMensaje(texto){ alert(texto); }
