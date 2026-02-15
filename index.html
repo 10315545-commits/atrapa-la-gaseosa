@@ -2,78 +2,30 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda + Chat</title>
+<title>Atrapa la Moneda - Mega Update</title>
 <style>
-body {
-  margin:0;
-  background:#0f0f0f;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-}
-h1 {
-  color:#00ffcc;
-  text-shadow:0 0 10px #00ffcc;
-}
-#game {
-  margin-top:20px;
-}
-/* Juego */
-#moneda {
-  font-size:80px;
-  margin:20px;
-}
-.info {
-  font-size:20px;
-  margin:10px;
-}
+body { margin:0; background:#0f0f0f; color:white; font-family:Arial; text-align:center; }
+h1 { color:#00ffcc; text-shadow:0 0 10px #00ffcc; }
+#game { margin-top:20px; }
+#moneda { font-size:80px; margin:20px; }
+.info { font-size:20px; margin:10px; }
 /* Chat */
 #chatContainer{
-  position:fixed;
-  bottom:10px;
-  right:10px;
-  width:260px;
-  max-height:320px;
-  background:rgba(0,0,0,0.7);
-  border:2px solid #00ffcc;
-  border-radius:10px;
-  padding:5px;
-  display:flex;
-  flex-direction:column;
-  z-index:1000;
+  position:fixed; bottom:10px; right:10px; width:260px; max-height:320px;
+  background:rgba(0,0,0,0.7); border:2px solid #00ffcc; border-radius:10px;
+  padding:5px; display:flex; flex-direction:column; z-index:1000;
 }
-#chatMessages{
-  flex:1;
-  overflow-y:auto;
-  padding:5px;
-  border-bottom:1px solid #00ffcc;
-  margin-bottom:5px;
-}
-#chatInput{
-  width:calc(100% - 60px);
-  padding:5px;
-  border:none;
-  border-radius:5px;
-  margin-right:5px;
-}
-#sendBtn{
-  width:50px;
-  background:#00ffcc;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-  font-weight:bold;
-}
-.chatMsg{
-  margin:2px 0;
-}
+#chatMessages{ flex:1; overflow-y:auto; padding:5px; border-bottom:1px solid #00ffcc; margin-bottom:5px; }
+#chatInput{ width:calc(100% - 60px); padding:5px; border:none; border-radius:5px; margin-right:5px; }
+#sendBtn{ width:50px; background:#00ffcc; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
+.chatMsg{ margin:2px 0; }
 .chatMsg.user{ color:#ffff66; }
 .chatMsg.owner{ color:#ff88ff; font-weight:bold; }
 </style>
 </head>
 <body>
 
-<h1>🎮 ATRAPA LA MONEDA</h1>
+<h1>🎮 ATRAPA LA MONEDA - MEGA UPDATE</h1>
 
 <div id="game">
   <h2 id="moneda">❓</h2>
@@ -185,6 +137,53 @@ chatInput.addEventListener("keydown",function(e){
   if(e.key==="Enter") sendChat();
 });
 sendBtn.addEventListener("click",sendChat);
+
+// ---------------- Comandos Owner ----------------
+const ownerPassword="ruler123"; // cambia a tu contraseña
+let isOwner=false;
+
+function loginOwner(pw){
+  if(pw===ownerPassword){
+    isOwner=true;
+    ownerSend("¡Owner conectado!");
+    alert("Modo Owner activado");
+  } else { alert("Contraseña incorrecta"); }
+}
+
+// Comandos antiguos y nuevos
+function giveCoins(n){
+  if(!isOwner) return;
+  pesos+=n;
+  actualizarStats();
+  ownerSend("Se han agregado "+n+" monedas!");
+}
+
+function infiniteLives(){
+  if(!isOwner) return;
+  vidas=9999;
+  actualizarStats();
+  ownerSend("Vidas infinitas activadas!");
+}
+
+function triggerEvent(eventName){
+  if(!isOwner) return;
+  switch(eventName){
+    case "rainDiamonds":
+      pesos+=10;
+      actualizarStats();
+      ownerSend("Evento Rain Diamonds activado! +10 monedas");
+      break;
+    default:
+      ownerSend("Evento desconocido: "+eventName);
+  }
+}
+
+// ---------------- Funciones antiguas preservadas ----------------
+// Puedes agregar más funciones antiguas aquí, solo para owner
+// Por ejemplo: comandos de party, clear monedas, eventos legacy
+// Legacy:
+// function partyEvent(){...}
+// function clearCoins(){...}
 </script>
 
 </body>
