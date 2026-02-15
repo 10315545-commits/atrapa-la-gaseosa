@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda - Chat Integrado</title>
+<title>Atrapa la Moneda + Chat</title>
 <style>
 body {
   margin:0;
@@ -11,17 +11,22 @@ body {
   font-family:Arial;
   text-align:center;
 }
-
 h1 {
   color:#00ffcc;
   text-shadow:0 0 10px #00ffcc;
 }
-
-/* Juego */
 #game {
   margin-top:20px;
 }
-
+/* Juego */
+#moneda {
+  font-size:80px;
+  margin:20px;
+}
+.info {
+  font-size:20px;
+  margin:10px;
+}
 /* Chat */
 #chatContainer{
   position:fixed;
@@ -71,7 +76,9 @@ h1 {
 <h1>🎮 ATRAPA LA MONEDA</h1>
 
 <div id="game">
-  <p>¡El juego sigue funcionando! Las monedas ya no tienen partículas.</p>
+  <h2 id="moneda">❓</h2>
+  <p>Presiona L, C o R</p>
+  <div class="info" id="stats"></div>
 </div>
 
 <!-- Chat -->
@@ -82,13 +89,70 @@ h1 {
 </div>
 
 <script>
-// ---- Chat JS ----
-let chatHistory=[]; 
+// ---------------- Juego ----------------
+let pesos=0, vidas=5, record=localStorage.getItem("record")||0;
+let secuencia=["R","L","C","L","R","C","R"];
+let indice=0;
+let monedaActual="";
+let velocidad=1500;
+let intervalo;
+
+const monedaEl=document.getElementById("moneda");
+const statsEl=document.getElementById("stats");
+
+function resetGame(){
+  pesos=0; vidas=5; velocidad=1500; indice=0;
+  actualizarStats();
+  nuevaMoneda();
+  clearInterval(intervalo);
+  intervalo=setInterval(tiempoAgotado,velocidad);
+}
+resetGame();
+
+function nuevaMoneda(){
+  monedaActual=secuencia[indice];
+  monedaEl.innerText=monedaActual;
+  indice++; if(indice>=secuencia.length) indice=0;
+}
+
+function actualizarStats(){
+  statsEl.innerText="Pesos: "+pesos+" | Vidas: "+vidas+" | Récord: "+record;
+}
+
+function tiempoAgotado(){
+  vidas--; actualizarStats();
+  if(vidas<=0) gameOver();
+  nuevaMoneda();
+}
+
+function gameOver(){
+  clearInterval(intervalo);
+  if(pesos>record){ record=pesos; localStorage.setItem("record",record);}
+  alert("GAME OVER\nPuntaje: "+pesos);
+  resetGame();
+}
+
+document.addEventListener("keydown", function(e){
+  const eleccion=e.key.toUpperCase();
+  if(!["L","C","R"].includes(eleccion)) return;
+  if(eleccion===monedaActual){
+    pesos++;
+    velocidad-=50;
+    if(velocidad<500) velocidad=500;
+    clearInterval(intervalo);
+    intervalo=setInterval(tiempoAgotado,velocidad);
+  } else { vidas--; }
+  actualizarStats();
+  if(vidas<=0) gameOver();
+  nuevaMoneda();
+});
+
+// ---------------- Chat ----------------
+let chatHistory=[];
 const chatMessages=document.getElementById("chatMessages");
 const chatInput=document.getElementById("chatInput");
 const sendBtn=document.getElementById("sendBtn");
 
-// Enviar mensaje usuario
 function sendChat(){
   const msg=chatInput.value.trim();
   if(!msg) return;
@@ -96,19 +160,16 @@ function sendChat(){
   chatInput.value="";
 }
 
-// Enviar mensaje owner/admin
 function ownerSend(msg){
   addMessage("owner",msg);
 }
 
-// Agregar mensaje al historial
 function addMessage(from,text){
-  if(chatHistory.length>=20) chatHistory.shift(); // últimos 20 mensajes
+  if(chatHistory.length>=20) chatHistory.shift();
   chatHistory.push({from,text});
   updateChat();
 }
 
-// Actualizar el chat en pantalla
 function updateChat(){
   chatMessages.innerHTML="";
   chatHistory.forEach(m=>{
@@ -120,16 +181,11 @@ function updateChat(){
   chatMessages.scrollTop=chatMessages.scrollHeight;
 }
 
-// Enviar al presionar Enter
 chatInput.addEventListener("keydown",function(e){
   if(e.key==="Enter") sendChat();
 });
 sendBtn.addEventListener("click",sendChat);
-
-// Ejemplo: enviar mensaje desde consola como owner
-// ownerSend("¡Hola jugadores!");
 </script>
 
 </body>
 </html>
-
