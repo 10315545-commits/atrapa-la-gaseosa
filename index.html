@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda - Legendary Owner</title>
+<title>Atrapa la Moneda - OWNER</title>
 
 <style>
 body{
@@ -41,22 +41,14 @@ h1{
   transition:left 0.3s ease;
 }
 
-.coin, .diamond{
+.coin{
   position:absolute;
   width:35px;
   height:35px;
-  border-radius:50%;
-  animation: fall linear forwards;
-}
-
-.coin{
   background:gold;
+  border-radius:50%;
   box-shadow:0 0 20px gold;
-}
-
-.diamond{
-  background:cyan;
-  box-shadow:0 0 20px cyan;
+  animation: fall linear forwards;
 }
 
 @keyframes fall{
@@ -112,7 +104,6 @@ h1{
   display:block;
   margin:5px 0;
   padding:5px;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -131,14 +122,10 @@ h1{
   <button onclick="moveRight()">R</button>
 </div>
 
-<!-- PANEL OWNER -->
 <div id="adminPanel">
   <strong>👑 OWNER PANEL</strong>
-  <button onclick="rainDiamonds()">Rain Diamonds</button>
-  <button onclick="megaParty()">Mega Party</button>
+  <button onclick="addCoins()">+50 Coins</button>
   <button onclick="clearCoins()">Clear Coins</button>
-  <button onclick="addCoins()">Add 50 Coins</button>
-  <button onclick="togglePanel()">Close Panel</button>
 </div>
 
 <script>
@@ -166,89 +153,83 @@ function moveRight(){
   player.style.transform = "none";
 }
 
+/* 🎮 CONTROL CON TECLAS L C R */
 document.addEventListener("keydown", function(e){
-  if(e.key === "ArrowLeft") moveLeft();
-  if(e.key === "ArrowRight") moveRight();
-  if(e.key === "ArrowDown" || e.key === " ") center();
+
+  let key = e.key.toLowerCase();
+
+  if(key === "l"){
+    moveLeft();
+  }
+
+  if(key === "c"){
+    center();
+  }
+
+  if(key === "r"){
+    moveRight();
+  }
+
 });
 
-function spawnItem(type){
-  let item = document.createElement("div");
-  item.className = type;
-  item.style.left = Math.random()*90 + "%";
+function spawnCoin(){
+  let coin = document.createElement("div");
+  coin.className = "coin";
+  coin.style.left = Math.random()*90 + "%";
 
   let duration = speed + Math.random();
-  item.style.animationDuration = duration + "s";
+  coin.style.animationDuration = duration + "s";
 
-  game.appendChild(item);
+  game.appendChild(coin);
 
   let check = setInterval(()=>{
-    let itemRect = item.getBoundingClientRect();
+    let coinRect = coin.getBoundingClientRect();
     let playerRect = player.getBoundingClientRect();
 
     if(
-      itemRect.bottom >= playerRect.top &&
-      itemRect.left < playerRect.right &&
-      itemRect.right > playerRect.left
+      coinRect.bottom >= playerRect.top &&
+      coinRect.left < playerRect.right &&
+      coinRect.right > playerRect.left
     ){
-      if(type === "coin") coins++;
-      if(type === "diamond") coins += 5;
-
+      coins++;
       updateCoins();
 
       let boom = document.createElement("div");
       boom.className="explosion";
-      boom.style.left=item.style.left;
+      boom.style.left=coin.style.left;
       boom.style.top=player.offsetTop+"px";
       game.appendChild(boom);
       setTimeout(()=>boom.remove(),400);
 
-      item.remove();
+      coin.remove();
       clearInterval(check);
 
       if(speed > 0.8) speed -= 0.03;
     }
 
-    if(!document.body.contains(item)){
+    if(!document.body.contains(coin)){
       clearInterval(check);
     }
 
   },20);
 
-  setTimeout(()=>item.remove(), duration*1000);
+  setTimeout(()=>coin.remove(), duration*1000);
 }
 
 setInterval(()=>{
-  spawnItem("coin");
+  spawnCoin();
 },700);
 
-/* OWNER EVENTS */
-
-function rainDiamonds(){
-  for(let i=0;i<10;i++){
-    setTimeout(()=>spawnItem("diamond"), i*200);
-  }
-}
-
-function megaParty(){
-  for(let i=0;i<20;i++){
-    setTimeout(()=>spawnItem("coin"), i*150);
-  }
-}
-
-function clearCoins(){
-  coins = 0;
-  updateCoins();
-}
+/* OWNER PANEL */
 
 function addCoins(){
   coins += 50;
   updateCoins();
 }
 
-function togglePanel(){
-  let panel = document.getElementById("adminPanel");
-  panel.style.display = "none";
+function clearCoins(){
+  coins = 0;
+  updateCoins();
 }
 </script>
 
