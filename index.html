@@ -1,193 +1,187 @@
-<!DOCTYPE html>
-<html>
+!DOCTYPE html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>atrapa la moneda</title>
+<title>Atrapa la Moneda - Owner Edition</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#0f172a;
+  background:#0b0f1a;
   color:white;
+  font-family:Arial;
   text-align:center;
+  overflow:hidden;
+}
+
+h1{
+  color:#00f7ff;
+}
+
+#gameArea{
+  position:relative;
+  width:100vw;
+  height:80vh;
+  background:#111827;
+  border-top:3px solid #00f7ff;
+  overflow:hidden;
+}
+
+#player{
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  width:60px;
+  height:60px;
+  background:#00f7ff;
+  border-radius:10px;
+  transform:translateX(-50%);
+}
+
+.coin{
+  position:absolute;
+  width:40px;
+  height:40px;
+  background:gold;
+  border-radius:50%;
+  top:0;
+}
+
+#score{
+  font-size:20px;
+  margin:10px;
 }
 
 button{
-  padding:10px 15px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
+  padding:10px 20px;
+  margin:10px;
+  font-size:16px;
   cursor:pointer;
-  font-weight:bold;
-}
-
-#mainMenu, #game, #adminPanel, #rulerPanel{
-  display:none;
-  margin-top:50px;
-}
-
-.adminBtn{ background:#00ffcc; }
-.rulerBtn{ background:#ff00ff; }
-.playBtn{ background:#00aaff; }
-
-input{
-  padding:8px;
-  border-radius:6px;
   border:none;
+  border-radius:5px;
+}
+
+#adminPanel{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.95);
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
 }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-  <h1>🔐 Login</h1>
-  <input type="text" id="username" placeholder="Nombre"><br><br>
-  <input type="password" id="password" placeholder="Contraseña"><br><br>
-  <button onclick="login()">Entrar</button>
+<h1>Atrapa la Moneda 💰</h1>
+<div id="score">Puntos: 0</div>
+
+<div id="adminButtonContainer"></div>
+
+<div id="gameArea">
+  <div id="player"></div>
 </div>
 
-<!-- MENU PRINCIPAL -->
-<div id="mainMenu">
-  <h1>🎮 MENÚ PRINCIPAL</h1>
-
-  <button class="playBtn" onclick="startGame()">Jugar</button>
-
-  <button id="adminBtn" class="adminBtn" onclick="openAdmin()" style="display:none;">
-    Panel Admin
-  </button>
-
-  <button id="rulerBtn" class="rulerBtn" onclick="openRuler()" style="display:none;">
-    Panel Ruler
-  </button>
-
-  <br><br>
-  <button onclick="logout()">Cerrar Sesión</button>
-</div>
-
-<!-- JUEGO -->
-<div id="game">
-  <h2>🎯 Juego Activo</h2>
-  <p id="stats"></p>
-  <button onclick="addCoins(1)">+1 Moneda</button>
-  <button onclick="backToMenu()">Volver</button>
-</div>
-
-<!-- PANEL ADMIN -->
 <div id="adminPanel">
-  <h2>🛠 Panel Admin</h2>
-  <button onclick="addCoins(10)">+10 Monedas</button>
-  <button onclick="backToMenu()">Volver</button>
-</div>
-
-<!-- PANEL RULER -->
-<div id="rulerPanel">
-  <h2>👑 Panel Ruler</h2>
-  <button onclick="addCoins(50)">+50 Monedas</button>
-  <button onclick="infiniteMode()">Vida Infinita</button>
-  <button onclick="backToMenu()">Volver</button>
+  <h2>👑 Panel Admin (Solo para Owner)</h2>
+  <button onclick="addPoints()">+10 Puntos</button>
+  <button onclick="increaseSpeed()">Aumentar Velocidad</button>
+  <button onclick="closeAdmin()">Cerrar</button>
 </div>
 
 <script>
+let modoAdmin = true; // 👈 PON false si no quieres que aparezca
 
-/* ---------------- SISTEMA DE USUARIOS ---------------- */
+let player = document.getElementById("player");
+let gameArea = document.getElementById("gameArea");
+let scoreText = document.getElementById("score");
 
-const users = {
-  "player1": { password:"1234", role:"player" },
-  "admin1":  { password:"admin123", role:"admin" },
-  "ruler1":  { password:"ruler123", role:"ruler" }
-};
+let score = 0;
+let playerX = window.innerWidth / 2;
+let coinSpeed = 5;
+let gamePaused = false;
 
-let currentUser = null;
-let coins = 0;
-let infinite = false;
+if(modoAdmin){
+  let btn = document.createElement("button");
+  btn.innerText = "👑 Panel Admin";
+  btn.onclick = openAdmin;
+  document.getElementById("adminButtonContainer").appendChild(btn);
+}
 
-function login(){
-  let name = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
-
-  if(users[name] && users[name].password === pass){
-    currentUser = users[name];
-    showMenu();
-  } else {
-    alert("Datos incorrectos");
+document.addEventListener("mousemove", (e)=>{
+  if(!gamePaused){
+    playerX = e.clientX - 30;
+    player.style.left = playerX + "px";
   }
+});
+
+function createCoin(){
+  if(gamePaused) return;
+
+  let coin = document.createElement("div");
+  coin.classList.add("coin");
+  coin.style.left = Math.random() * (window.innerWidth - 40) + "px";
+  gameArea.appendChild(coin);
+
+  let coinY = 0;
+
+  let fall = setInterval(()=>{
+    if(gamePaused){
+      clearInterval(fall);
+      coin.remove();
+      return;
+    }
+
+    coinY += coinSpeed;
+    coin.style.top = coinY + "px";
+
+    let playerRect = player.getBoundingClientRect();
+    let coinRect = coin.getBoundingClientRect();
+
+    if(
+      coinRect.bottom > playerRect.top &&
+      coinRect.left < playerRect.right &&
+      coinRect.right > playerRect.left
+    ){
+      score++;
+      scoreText.innerText = "Puntos: " + score;
+      clearInterval(fall);
+      coin.remove();
+    }
+
+    if(coinY > gameArea.offsetHeight){
+      clearInterval(fall);
+      coin.remove();
+    }
+
+  },20);
 }
 
-function showMenu(){
-  document.getElementById("login").style.display="none";
-  document.getElementById("mainMenu").style.display="block";
-
-  // Mostrar botones según rol
-  if(currentUser.role === "admin" || currentUser.role === "ruler"){
-    document.getElementById("adminBtn").style.display="inline-block";
-  }
-
-  if(currentUser.role === "ruler"){
-    document.getElementById("rulerBtn").style.display="inline-block";
-  }
-}
-
-function logout(){
-  location.reload();
-}
-
-/* ---------------- MENÚS ---------------- */
-
-function startGame(){
-  hideAll();
-  document.getElementById("game").style.display="block";
-  updateStats();
-}
+setInterval(createCoin, 1000);
 
 function openAdmin(){
-  if(currentUser.role === "admin" || currentUser.role === "ruler"){
-    hideAll();
-    document.getElementById("adminPanel").style.display="block";
-  }
+  gamePaused = true;
+  document.getElementById("adminPanel").style.display = "flex";
 }
 
-function openRuler(){
-  if(currentUser.role === "ruler"){
-    hideAll();
-    document.getElementById("rulerPanel").style.display="block";
-  }
+function closeAdmin(){
+  gamePaused = false;
+  document.getElementById("adminPanel").style.display = "none";
 }
 
-function backToMenu(){
-  hideAll();
-  document.getElementById("mainMenu").style.display="block";
+function addPoints(){
+  score += 10;
+  scoreText.innerText = "Puntos: " + score;
 }
 
-function hideAll(){
-  document.getElementById("mainMenu").style.display="none";
-  document.getElementById("game").style.display="none";
-  document.getElementById("adminPanel").style.display="none";
-  document.getElementById("rulerPanel").style.display="none";
+function increaseSpeed(){
+  coinSpeed += 2;
 }
-
-/* ---------------- FUNCIONES DEL JUEGO ---------------- */
-
-function addCoins(n){
-  coins += n;
-  updateStats();
-}
-
-function infiniteMode(){
-  infinite = true;
-  alert("Modo infinito activado 👑");
-}
-
-function updateStats(){
-  document.getElementById("stats").innerText =
-    "Monedas: " + coins +
-    (infinite ? " | Vida infinita ACTIVADA" : "");
-}
-
 </script>
+
 </body>
 </html>
-
-
