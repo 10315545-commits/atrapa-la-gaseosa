@@ -2,20 +2,25 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Atrapa la Moneda - Owner Edition</title>
+<title>Owner Coin Event</title>
+
 <style>
 body{
   margin:0;
   background:radial-gradient(circle at top,#0a0f2a,#050510);
-  color:white;
   font-family:Arial;
+  color:white;
   text-align:center;
   overflow:hidden;
 }
+
+/* TITULOS */
 h1{
   color:#00f7ff;
-  text-shadow:0 0 15px #00f7ff;
+  text-shadow:0 0 20px #00f7ff;
 }
+
+/* PANTALLA INICIAL */
 #startScreen{
   position:fixed;
   width:100%;
@@ -27,15 +32,13 @@ h1{
   align-items:center;
   z-index:10;
 }
-#startScreen p{
-  font-size:24px;
-  margin:10px 0;
-}
+
 .keyBox{
   display:flex;
   gap:40px;
   margin-top:20px;
 }
+
 .key{
   width:80px;
   height:80px;
@@ -45,29 +48,34 @@ h1{
   justify-content:center;
   align-items:center;
   font-size:40px;
-  box-shadow:0 0 20px #00f7ff;
   border-radius:10px;
+  box-shadow:0 0 20px #00f7ff;
 }
+
+/* AREA DE JUEGO */
 #game{
   position:relative;
   width:100%;
-  height:420px;
+  height:450px;
   border-top:3px solid #00f7ff;
   box-shadow:0 0 20px #00f7ff inset;
   overflow:hidden;
 }
+
 .player{
   position:absolute;
   bottom:20px;
   left:50%;
   transform:translateX(-50%);
-  width:110px;
+  width:120px;
   height:25px;
   background:#00f7ff;
-  border-radius:15px;
+  border-radius:20px;
   box-shadow:0 0 25px #00f7ff;
-  transition:left 0.3s ease;
+  transition:0.3s;
 }
+
+/* MONEDA */
 .coin{
   position:absolute;
   width:35px;
@@ -75,25 +83,47 @@ h1{
   background:gold;
   border-radius:50%;
   box-shadow:0 0 20px gold;
-  animation: fall linear forwards;
+  animation:fall linear forwards;
 }
+
 @keyframes fall{
   from{ top:-40px; }
-  to{ top:420px; }
+  to{ top:460px; }
 }
+
+/* EXPLOSION */
 .explosion{
   position:absolute;
   width:40px;
   height:40px;
-  border-radius:50%;
   background:yellow;
-  animation: explode 0.4s forwards;
+  border-radius:50%;
+  animation:explode 0.4s forwards;
 }
+
 @keyframes explode{
-  from{ transform:scale(1); opacity:1; }
-  to{ transform:scale(2); opacity:0; }
+  from{transform:scale(1);opacity:1;}
+  to{transform:scale(2);opacity:0;}
 }
-#adminPanel{
+
+/* BOTONES LCR */
+.controls{
+  margin-top:10px;
+}
+
+.controls button{
+  font-size:22px;
+  padding:10px 25px;
+  margin:10px;
+  border:none;
+  border-radius:10px;
+  background:#00f7ff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* OWNER PANEL */
+#panel{
   position:fixed;
   top:10px;
   right:10px;
@@ -102,39 +132,23 @@ h1{
   border:2px solid #00f7ff;
   box-shadow:0 0 15px #00f7ff;
 }
-#adminPanel button{
+
+#panel button{
   display:block;
   margin:5px 0;
-  padding:5px;
-  cursor:pointer;
-}
-.controls{
-  position:absolute;
-  bottom:90px;
-  width:100%;
-  display:flex;
-  justify-content:center;
-  gap:30px;
-}
-.controls button{
-  font-size:22px;
-  padding:12px 30px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:#00f7ff;
-  color:black;
-  font-weight:bold;
+  width:140px;
 }
 </style>
 </head>
+
 <body>
 
 <!-- PANTALLA INICIAL -->
 <div id="startScreen">
   <h1>👑 OWNER EDITION</h1>
-  <p>Ranking / Eventos</p>
-  <p>Presiona L, C o R para comenzar</p>
+  <p>Ranking / Eventos Activos</p>
+  <p>Presiona L C R para iniciar</p>
+
   <div class="keyBox">
     <div class="key">L</div>
     <div class="key">C</div>
@@ -143,7 +157,7 @@ h1{
 </div>
 
 <h1>Atrapa la Moneda</h1>
-<h2>Monedas: <span id="coins">0</span></h2>
+<h2>Coins: <span id="score">0</span></h2>
 
 <div id="game">
   <div class="player" id="player"></div>
@@ -155,100 +169,107 @@ h1{
   <button onclick="moveRight()">R</button>
 </div>
 
-<!-- PANEL OWNER -->
-<div id="adminPanel">
-  <strong>👑 OWNER PANEL</strong>
-  <button onclick="addCoins()">+50 Coins</button>
-  <button onclick="clearCoins()">Clear Coins</button>
+<!-- OWNER PANEL -->
+<div id="panel">
+  <strong>👑 OWNER</strong>
+  <button onclick="addCoins()">+100</button>
+  <button onclick="megaEvent()">Mega Event</button>
+  <button onclick="turbo()">Turbo</button>
+  <button onclick="slow()">Slow</button>
+  <button onclick="pause()">Pause</button>
+  <button onclick="resume()">Resume</button>
+  <button onclick="reset()">Reset</button>
 </div>
 
 <script>
 let player = document.getElementById("player");
 let game = document.getElementById("game");
-let coins = 0;
+let score = 0;
 let speed = 2;
 let gameStarted = false;
+let paused = false;
 
-function updateCoins(){
-  document.getElementById("coins").innerText = coins;
+/* ACTUALIZAR SCORE */
+function updateScore(){
+  document.getElementById("score").innerText = score;
 }
 
-function moveLeft(){ player.style.left = "15%"; player.style.transform="none"; }
-function center(){ player.style.left = "50%"; player.style.transform="translateX(-50%)"; }
-function moveRight(){ player.style.left = "85%"; player.style.transform="none"; }
+/* MOVIMIENTO */
+function moveLeft(){ player.style.left="15%"; player.style.transform="none"; }
+function center(){ player.style.left="50%"; player.style.transform="translateX(-50%)"; }
+function moveRight(){ player.style.left="85%"; player.style.transform="none"; }
 
-function startGame(){ 
-  document.getElementById("startScreen").style.display="none"; 
-  gameStarted = true; 
+/* INICIAR */
+function startGame(){
+  document.getElementById("startScreen").style.display="none";
+  gameStarted=true;
 }
 
-// CONTROL TECLAS L C R
-document.addEventListener("keydown", function(e){
-  let key = e.key.toLowerCase();
+/* TECLAS LCR */
+document.addEventListener("keydown",function(e){
+  let key=e.key.toLowerCase();
 
-  if(!gameStarted && (key==="l" || key==="c" || key==="r")){
+  if(!gameStarted && (key==="l"||key==="c"||key==="r")){
     startGame();
   }
 
-  if(gameStarted){
+  if(gameStarted && !paused){
     if(key==="l") moveLeft();
     if(key==="c") center();
     if(key==="r") moveRight();
   }
 });
 
-// FUNCION MONEDAS
+/* CREAR MONEDA */
 function spawnCoin(){
-  if(!gameStarted) return;
-  let coin = document.createElement("div");
+  if(!gameStarted || paused) return;
+
+  let coin=document.createElement("div");
   coin.className="coin";
-  coin.style.left = Math.random()*90 + "%";
-  let duration = speed + Math.random();
-  coin.style.animationDuration = duration+"s";
+  coin.style.left=Math.random()*90+"%";
+  coin.style.animationDuration=(speed+Math.random())+"s";
   game.appendChild(coin);
 
-  let check = setInterval(()=>{
-    let coinRect = coin.getBoundingClientRect();
-    let playerRect = player.getBoundingClientRect();
-    if(coinRect.bottom >= playerRect.top &&
-       coinRect.left < playerRect.right &&
-       coinRect.right > playerRect.left){
-      coins++;
-      updateCoins();
-      let boom = document.createElement("div");
+  let check=setInterval(()=>{
+    let c=coin.getBoundingClientRect();
+    let p=player.getBoundingClientRect();
+
+    if(c.bottom>=p.top && c.left<p.right && c.right>p.left){
+      score++;
+      updateScore();
+
+      let boom=document.createElement("div");
       boom.className="explosion";
       boom.style.left=coin.style.left;
       boom.style.top=player.offsetTop+"px";
       game.appendChild(boom);
+
       setTimeout(()=>boom.remove(),400);
       coin.remove();
       clearInterval(check);
-      if(speed>0.8) speed -=0.03;
     }
+
     if(!document.body.contains(coin)) clearInterval(check);
   },20);
-  setTimeout(()=>coin.remove(), duration*1000);
-}
 
-// LLUVIA INICIAL DE MONEDAS EN FONDO
-function spawnBackgroundCoins(){
-  let coin = document.createElement("div");
-  coin.className="coin";
-  coin.style.left = Math.random()*90 + "%";
-  coin.style.opacity = 0.3; // fondo
-  coin.style.animationDuration = (3 + Math.random()*2)+"s";
-  game.appendChild(coin);
   setTimeout(()=>coin.remove(),5000);
 }
-setInterval(spawnBackgroundCoins,200);
 
-// LLUVIA DE MONEDAS PRINCIPAL
 setInterval(spawnCoin,700);
 
-// PANEL OWNER
-function addCoins(){ coins+=50; updateCoins(); }
-function clearCoins(){ coins=0; updateCoins(); }
-
+/* OWNER COMANDOS */
+function addCoins(){ score+=100; updateScore(); }
+function megaEvent(){ for(let i=0;i<25;i++) spawnCoin(); }
+function turbo(){ speed=0.6; }
+function slow(){ speed=3; }
+function pause(){ paused=true; }
+function resume(){ paused=false; }
+function reset(){
+  score=0;
+  speed=2;
+  paused=false;
+  updateScore();
+}
 </script>
 
 </body>
