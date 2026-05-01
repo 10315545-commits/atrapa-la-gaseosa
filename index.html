@@ -15,6 +15,7 @@ body{
 h1{color:#00ffcc;}
 #moneda{font-size:80px;margin:20px;}
 .info{font-size:20px;}
+
 #chat{
   position:fixed;
   bottom:10px;
@@ -52,11 +53,12 @@ h1{color:#00ffcc;}
 
 <script>
 
-// 🔒 PROTECCIÓN LOGIN
+// 🔒 BLOQUEO LOGIN
 if(localStorage.getItem("logged") !== "true"){
   location.href = "login.html";
 }
 
+// RANGO
 let role = localStorage.getItem("role") || "player";
 localStorage.removeItem("logged");
 
@@ -68,6 +70,11 @@ const messages = document.getElementById("messages");
 
 // JUEGO
 let pesos=0, vidas=5, record=parseInt(localStorage.getItem("record"))||0;
+
+// 👉 DIFERENCIAS DE RANGO
+if(role === "owner"){ vidas = 999; }
+if(role === "admin"){ vidas = 10; }
+
 let secuencia=["R","L","C","L","R","C","R"];
 let i=0, actual="", vel=1500, loop;
 
@@ -78,7 +85,16 @@ function nueva(){
 }
 
 function update(){
-  stats.textContent=`Pesos:${pesos} | Vidas:${vidas} | Record:${record} | Rango:${role}`;
+  let color="white";
+
+  if(role==="owner") color="violet";
+  if(role==="admin") color="red";
+  if(role==="tester") color="cyan";
+
+  stats.innerHTML = `
+    Pesos:${pesos} | Vidas:${vidas} | Record:${record} 
+    | <span style="color:${color}">Rango:${role}</span>
+  `;
 }
 
 function over(){
@@ -99,7 +115,8 @@ function tick(){
 }
 
 function start(){
-  pesos=0; vidas=5; vel=1500; i=0;
+  pesos=0; vidas=(role==="owner"?999:(role==="admin"?10:5));
+  vel=1500; i=0;
   update(); nueva();
   clearInterval(loop);
   loop=setInterval(tick,vel);
@@ -130,7 +147,7 @@ input.addEventListener("keydown",e=>{
   if(e.key==="Enter"){
     if(!input.value.trim()) return;
 
-    addMsg("Jugador: "+input.value);
+    addMsg("[" + role + "] " + input.value);
     input.value="";
   }
 });
