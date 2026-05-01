@@ -1,1 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
 
+<style>
+body{
+  margin:0;
+  background:#0f172a;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+.box{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#111;
+  padding:20px;
+  border-radius:10px;
+  border:2px solid #00ffcc;
+}
+
+input,button{
+  margin:6px;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🎮 Entrar</h2>
+
+  <button onclick="enterPlayer()">Entrar como Player</button>
+
+  <hr>
+
+  <h3>Staff</h3>
+  <input id="user" placeholder="usuario"><br>
+  <input id="pass" type="password" placeholder="contraseña"><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<script>
+const users = {
+  owner:{pass:"1234",role:"owner"},
+  admin:{pass:"1234",role:"admin"},
+  tester:{pass:"1234",role:"tester"}
+};
+
+function enterPlayer(){
+  localStorage.setItem("role","player");
+  location.href="index.html";
+}
+
+function login(){
+  const u = user.value.trim();
+  const p = pass.value.trim();
+
+  if(users[u] && users[u].pass === p){
+    localStorage.setItem("role", users[u].role);
+    location.href="index.html";
+  }else{
+    alert("Error");
+  }
+}
+</script>
+
+</body>
+</html>
