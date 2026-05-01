@@ -10,27 +10,33 @@ body{
   background:#0f172a;
   color:white;
   font-family:Arial;
-  text-align:center;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
+
 .box{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
   background:#111;
   padding:20px;
   border-radius:10px;
   border:2px solid #00ffcc;
+  text-align:center;
+  width:260px;
 }
+
 input,button{
   margin:6px;
-  padding:6px;
+  padding:8px;
   border:none;
   border-radius:6px;
+  width:90%;
 }
+
 button{
   background:#00ffcc;
   cursor:pointer;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -40,14 +46,14 @@ button{
 <div class="box">
   <h2>🎮 LOGIN</h2>
 
-  <button onclick="enterPlayer()">Entrar como Player</button>
+  <button id="playerBtn">Entrar como Player</button>
 
   <hr>
 
-  <input id="user" placeholder="usuario"><br>
-  <input id="pass" type="password" placeholder="contraseña"><br>
+  <input id="user" placeholder="usuario">
+  <input id="pass" type="password" placeholder="contraseña">
 
-  <button onclick="login()">Login</button>
+  <button id="loginBtn">Login</button>
 </div>
 
 <script>
@@ -57,24 +63,40 @@ const users = {
   tester:{pass:"1234",role:"tester"}
 };
 
-function enterPlayer(){
+// BOTONES
+const playerBtn = document.getElementById("playerBtn");
+const loginBtn = document.getElementById("loginBtn");
+
+const userInput = document.getElementById("user");
+const passInput = document.getElementById("pass");
+
+// PLAYER
+playerBtn.addEventListener("click", ()=>{
   localStorage.setItem("role","player");
   localStorage.setItem("logged","true");
-  location.href="index.html";
-}
+  window.location.href = "index.html";
+});
 
-function login(){
-  const userInput = document.getElementById("user").value.trim();
-  const passInput = document.getElementById("pass").value.trim();
+// LOGIN
+loginBtn.addEventListener("click", ()=>{
+  const u = userInput.value.trim();
+  const p = passInput.value.trim();
 
-  if(users[userInput] && users[userInput].pass === passInput){
-    localStorage.setItem("role", users[userInput].role);
+  if(users[u] && users[u].pass === p){
+    localStorage.setItem("role", users[u].role);
     localStorage.setItem("logged","true");
-    location.href="index.html";
+    window.location.href = "index.html";
   }else{
     alert("Usuario o contraseña incorrectos");
   }
-}
+});
+
+// ENTER PARA LOGIN
+passInput.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){
+    loginBtn.click();
+  }
+});
 </script>
 
 </body>
