@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Atrapa la Moneda</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* ===== PANTALLA DE LOGIN ===== */
+        .login-screen {
+            background: #1a1a1a;
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-title {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-subtitle {
+            color: #87CEEB;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #87CEEB;
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: #252525;
+            border: 2px solid #667eea;
+            color: #fff;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(118, 75, 162, 0.5);
+            background: #2a2a2a;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: #d32f2f;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: none;
+            animation: shake 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ===== PANEL ADMIN ===== */
+        .admin-screen {
+            background: #1a1a1a;
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideDown 0.5s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .admin-screen.hidden {
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .admin-title {
+            color: #667eea;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #b71c1c;
+            transform: scale(1.05);
+        }
+
+        .admin-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #252525;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            color: #ffa500;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid #ffa500;
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #87CEEB;
+            font-size: 12px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-row input {
+            flex: 1;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #667eea;
+            color: #fff;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+        }
+
+        .control-row input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(118, 75, 162, 0.5);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .admin-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e68900;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #87CEEB;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .event-btn {
+            padding: 10px;
+            border: 1px solid #667eea;
+            background: #1a1a1a;
+            color: #87CEEB;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .event-btn:hover {
+            background: #252525;
+            border-color: #764ba2;
+            transform: translateX(3px);
+        }
+
+        .event-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .info-box {
+            background: #0d47a1;
+            border-left: 3px solid #4caf50;
+            color: #87CEEB;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 11px;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #667eea;
+            margin: 15px 0;
+            opacity: 0.3;
+        }
+
+        /* Scroll bar */
+        .admin-screen::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .admin-screen::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .admin-screen::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .admin-screen::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA LOGIN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-title">🔐 Panel Admin</div>
+        <div class="login-subtitle">Atrapa la Moneda</div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" placeholder="Ingresa la contraseña" required>
+            </div>
+            <button type="submit" class="login-btn">Acceder</button>
+        </form>
+    </div>
+
+    <!-- PANEL ADMIN -->
+    <div class="admin-screen hidden" id="adminScreen">
+        <div class="admin-header">
+            <div class="admin-title">
+                <span class="admin-status"></span>
+                Panel Admin
+            </div>
+            <button class="logout-btn" id="logoutBtn">Salir</button>
+        </div>
+
+        <!-- SECCIÓN: INFORMACIÓN -->
+        <div class="section">
+            <div class="section-title">📊 Estado del Juego</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">🪙 Monedas</div>
+                    <div class="stat-value" id="statCoins">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">💎 Gemas</div>
+                    <div class="stat-value" id="statGems">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">⭐ Puntuación</div>
+                    <div class="stat-value" id="statScore">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📍 Evento Activo</div>
+                    <div class="stat-value" id="statEvent">Ninguno</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: AGREGAR RECURSOS -->
+        <div class="section">
+            <div class="section-title">➕ Agregar Recursos</div>
+            
+            <div class="control-group">
+                <label>Monedas:</label>
+                <div class="control-row">
+                    <input type="number" id="coinsAmount" placeholder="Cantidad" value="10" min="1">
+                    <button class="admin-btn btn-primary" id="addCoinsBtn">Agregar</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Gemas:</label>
+                <div class="control-row">
+                    <input type="number" id="gemsAmount" placeholder="Cantidad" value="5" min="1">
+                    <button class="admin-btn btn-primary" id="addGemsBtn">Agregar</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Puntuación:</label>
+                <div class="control-row">
+                    <input type="number" id="scoreAmount" placeholder="Cantidad" value="100" min="1">
+                    <button class="admin-btn btn-primary" id="addScoreBtn">Agregar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: RESTAR RECURSOS -->
+        <div class="section">
+            <div class="section-title">➖ Restar Recursos</div>
+            
+            <div class="btn-group">
+                <button class="admin-btn btn-danger" id="resetCoinsBtn">Reiniciar Monedas</button>
+                <button class="admin-btn btn-danger" id="resetGemsBtn">Reiniciar Gemas</button>
+            </div>
+            <button class="admin-btn btn-danger" id="resetAllBtn" style="width: 100%; margin-top: 10px;">Reiniciar Todo</button>
+        </div>
+
+        <!-- SECCIÓN: EVENTOS -->
+        <div class="section">
+            <div class="section-title">⚡ Controlar Eventos</div>
+            
+            <div class="control-group">
+                <label>Eventos Disponibles:</label>
+                <div class="event-list">
+                    <button class="event-btn" data-event="Free Coins">🪙 Lluvia de Monedas</button>
+                    <button class="event-btn" data-event="Free Gems">💎 Lluvia de Gemas</button>
+                    <button class="event-btn" data-event="Asteroid">☄️ Asteroide</button>
+                    <button class="event-btn" data-event="Trollge Event">👹 Trollge Event</button>
+                </div>
+            </div>
+
+            <button class="admin-btn btn-danger" id="endEventBtn" style="width: 100%; margin-top: 10px;">Detener Evento</button>
+        </div>
+
+        <!-- INFORMACIÓN -->
+        <div class="info-box">
+            ℹ️ <strong>Tip:</strong> Los cambios se aplican en tiempo real al juego. Asegúrate de que el juego esté abierto en otra ventana para ver los cambios instantáneamente.
+        </div>
+    </div>
+</div>
+
+<script src="gameplay.js"></script>
+<script>
+    // Configuración de contraseña (CAMBIAR EN PRODUCCIÓN)
+    const ADMIN_PASSWORD = "admin123"; // Cambiar a una contraseña más segura
+
+    // DOM Elements
+    const loginScreen = document.getElementById('loginScreen');
+    const adminScreen = document.getElementById('adminScreen');
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('password');
+    const errorMessage = document.getElementById('errorMessage');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Stats
+    const statCoins = document.getElementById('statCoins');
+    const statGems = document.getElementById('statGems');
+    const statScore = document.getElementById('statScore');
+    const statEvent = document.getElementById('statEvent');
+
+    // Control Buttons
+    const addCoinsBtn = document.getElementById('addCoinsBtn');
+    const addGemsBtn = document.getElementById('addGemsBtn');
+    const addScoreBtn = document.getElementById('addScoreBtn');
+    const resetCoinsBtn = document.getElementById('resetCoinsBtn');
+    const resetGemsBtn = document.getElementById('resetGemsBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+
+    // Event Buttons
+    const eventBtns = document.querySelectorAll('.event-btn');
+    const endEventBtn = document.getElementById('endEventBtn');
+
+    // Input Fields
+    const coinsAmountInput = document.getElementById('coinsAmount');
+    const gemsAmountInput = document.getElementById('gemsAmount');
+    const scoreAmountInput = document.getElementById('scoreAmount');
+
+    // LOGIN HANDLER
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const password = passwordInput.value;
+
+        if (password === ADMIN_PASSWORD) {
+            loginScreen.classList.add('hidden');
+            adminScreen.classList.remove('hidden');
+            updateStats();
+            // Limpiar input
+            passwordInput.value = '';
+        } else {
+            showError('❌ Contraseña incorrecta');
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    });
+
+    // LOGOUT HANDLER
+    logoutBtn.addEventListener('click', () => {
+        adminScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        passwordInput.focus();
+    });
+
+    // ERROR MESSAGE
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('show');
+        setTimeout(() => {
+            errorMessage.classList.remove('show');
+        }, 3000);
+    }
+
+    // UPDATE STATS
+    function updateStats() {
+        statCoins.textContent = Game.coins;
+        statGems.textContent = Game.gems;
+        statScore.textContent = Game.score;
+        statEvent.textContent = Game.currentEvent || 'Ninguno';
+        
+        // Actualizar estado de botones de eventos
+        updateEventButtons();
+    }
+
+    function updateEventButtons() {
+        eventBtns.forEach(btn => {
+            if (btn.dataset.event === Game.currentEvent) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // ADD RESOURCES
+    addCoinsBtn.addEventListener('click', () => {
+        const amount = parseInt(coinsAmountInput.value) || 0;
+        if (amount > 0) {
+            Game.addCoins(amount);
+            updateStats();
+        }
+    });
+
+    addGemsBtn.addEventListener('click', () => {
+        const amount = parseInt(gemsAmountInput.value) || 0;
+        if (amount > 0) {
+            Game.addGems(amount);
+            updateStats();
+        }
+    });
+
+    addScoreBtn.addEventListener('click', () => {
+        const amount = parseInt(scoreAmountInput.value) || 0;
+        if (amount > 0) {
+            Game.addScore(amount);
+            updateStats();
+        }
+    });
+
+    // RESET RESOURCES
+    resetCoinsBtn.addEventListener('click', () => {
+        Game.coins = 0;
+        Game.updateUI();
+        updateStats();
+    });
+
+    resetGemsBtn.addEventListener('click', () => {
+        Game.gems = 0;
+        Game.updateUI();
+        updateStats();
+    });
+
+    resetAllBtn.addEventListener('click', () => {
+        Game.coins = 0;
+        Game.gems = 0;
+        Game.score = 0;
+        Game.currentEvent = null;
+        Game.updateUI();
+        updateStats();
+    });
+
+    // EVENT CONTROLS
+    eventBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const eventName = btn.dataset.event;
+            if (Game.currentEvent === eventName) {
+                // Si el evento ya está activo, desactivarlo
+                Game.endEvent();
+            } else {
+                // Iniciar nuevo evento
+                Game.startEvent(eventName);
+            }
+            updateStats();
+        });
+    });
+
+    endEventBtn.addEventListener('click', () => {
+        Game.endEvent();
+        updateStats();
+    });
+
+    // Auto-update stats cada 500ms
+    setInterval(updateStats, 500);
+
+    // Focus en input al cargar
+    passwordInput.focus();
+</script>
+
+</body>
+</html>
