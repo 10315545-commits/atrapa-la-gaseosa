@@ -1053,7 +1053,7 @@
         <button class="admin-btn admin-btn-danger" id="clearBtn">🗑️ Limpiar Todo</button>
     </div>
 </div>
-{
+
 <script>
     // ===== CONFIGURACIÓN DEL JUEGO =====
     const CONFIG = {
@@ -1201,7 +1201,8 @@
                     
                     for (let i = 0; i < colors.length; i++) {
                         ctx.fillStyle = colors[i];
-                        ctx.fillRect(x, y + (i * segmentHeight), width, segmentHeight);
+                      },
+            {    ctx.fillRect(x, y + (i * segmentHeight), width, segmentHeight);
                     }
                     
                     ctx.strokeStyle = "#FFD700";
@@ -1211,10 +1212,7 @@
                     ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
                     ctx.fillRect(x, y, width, height / 3);
                 }
-            }
-        ]
-    };
-                // ... aquí termina el dibujo de tu skin anterior
+                            // ... aquí termina el dibujo de tu skin anterior
                     ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
                     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
                 } // <-- AQUÍ CIERRA TU SKIN ANTERIOR
@@ -1276,6 +1274,9 @@
                     ctx.fillRect(x + (width / 2) - 10, y + (height / 2) - 3, 20, 6);
                 }
             } // <-- AQUÍ CIERRA LA ÚLTIMA SKIN SIN COMA DESPUÉS
+
+        
+    
 
     // ===== ESTADO DEL JUEGO =====
     const gameState = {
