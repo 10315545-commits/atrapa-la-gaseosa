@@ -1053,10 +1053,7 @@
         <button class="admin-btn admin-btn-danger" id="clearBtn">🗑️ Limpiar Todo</button>
     </div>
 </div>
-{ id: 'avatar6', name: '🚀 Astronauta', emoji: '🚀', price: 350 },
-{ id: 'basket_canvas', name: '🧺 Cesta de Canvas', emoji: '🧺', price: 250 },
-{ id: 'basket_admin', name: '👑 Cesta de Admin', emoji: '👑', price: 0 }
-
+{
 <script>
     // ===== CONFIGURACIÓN DEL JUEGO =====
     const CONFIG = {
@@ -1217,6 +1214,68 @@
             }
         ]
     };
+                // ... aquí termina el dibujo de tu skin anterior
+                    ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+                    ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
+                } // <-- AQUÍ CIERRA TU SKIN ANTERIOR
+            },
+            {
+                id: 'basket_canvas', 
+                name: '🧺 Cesta de Canvas', 
+                price: 250,
+                new: true,
+                draw: function(ctx, x, y, width, height) {
+                    // 1. Cuerpo de la lona (marrón claro/beige)
+                    ctx.fillStyle = '#e4d5b7';
+                    ctx.fillRect(x, y + (height * 0.2), width, height * 0.8);
+                    
+                    // 2. Textura de hilos (Líneas cruzadas de lona)
+                    ctx.strokeStyle = 'rgba(139, 90, 43, 0.2)';
+                    ctx.lineWidth = 2;
+                    for (let i = x + 4; i < x + width; i += 8) {
+                        ctx.beginPath(); 
+                        ctx.moveTo(i, y + (height * 0.2)); 
+                        ctx.lineTo(i, y + height); 
+                        ctx.stroke();
+                    }
+                    
+                    // 3. Borde reforzado arriba
+                    ctx.fillStyle = '#cdb896';
+                    ctx.fillRect(x - 2, y + (height * 0.15), width + 4, height * 0.12);
+                    
+                    // 4. Asa de la cesta
+                    ctx.strokeStyle = '#8b5a2b';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(x + (width / 2), y + (height * 0.2), width * 0.3, 0, Math.PI, true);
+                    ctx.stroke();
+                }
+            },
+            {
+                id: 'basket_admin', 
+                name: '👑 Cesta de Admin', 
+                price: 0,
+                new: true,
+                draw: function(ctx, x, y, width, height) {
+                    // Cesta de Administrador (Rojo VIP con bordes de oro brillante)
+                    ctx.fillStyle = '#dc3545';
+                    ctx.fillRect(x, y, width, height);
+                    
+                    // Bordes de oro
+                    ctx.strokeStyle = '#ffc107';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(x, y, width, height);
+                    
+                    // Brillo interior VIP
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                    ctx.fillRect(x + 4, y + 4, width - 8, (height - 8) / 2);
+                    
+                    // Detalle de Admin en el centro (Cruz dorada simplificada)
+                    ctx.fillStyle = '#ffc107';
+                    ctx.fillRect(x + (width / 2) - 3, y + (height / 2) - 10, 6, 20);
+                    ctx.fillRect(x + (width / 2) - 10, y + (height / 2) - 3, 20, 6);
+                }
+            } // <-- AQUÍ CIERRA LA ÚLTIMA SKIN SIN COMA DESPUÉS
 
     // ===== ESTADO DEL JUEGO =====
     const gameState = {
