@@ -1,188 +1,165 @@
-const eventos = [
-    {
-        nombre: "Free Coins",
-        descripcion: "Aparecen monedas gratis por tiempo limitado."
-    },
-    {
-        nombre: "Asteroid",
-        descripcion: "Caen asteroides por el mapa."
-    },
-    {
-        nombre: "Free Gems",
-        descripcion: "Los jugadores reciben gemas gratis."
-    },
-    {
-        nombre: "Trollge Event",
-        descripcion: "Aparecen Trollges especiales con recompensas."
-    }
+// --- SISTEMA DE SKINS DE CESTAS ---
+const skinsShop = [
+    { id: 'basket_base', name: 'Cesta Madera', emoji: '🧺', price: 0, purchased: true, equipped: true },
+    { id: 'bucket_wood', name: 'Cubeta Vieja', emoji: '🪣', price: 50, purchased: false, equipped: false },
+    { id: 'shopping_bag', name: 'Bolsa Súper', emoji: '🛍️', price: 100, purchased: false, equipped: false },
+    { id: 'cart', name: 'Carrito Súper', emoji: '🛒', price: 200, purchased: false, equipped: false },
+    { id: 'box', name: 'Caja Cartón', emoji: '📦', price: 250, purchased: false, equipped: false },
+    { id: 'pot_gold', name: 'Olla de Barro', emoji: '🏺', price: 350, purchased: false, equipped: false },
+    { id: 'backpack', name: 'Mochila Viaje', emoji: '🎒', price: 450, purchased: false, equipped: false },
+    { id: 'chest', name: 'Cofre Madera', emoji: '🧰', price: 600, purchased: false, equipped: false },
+    { id: 'hat_magician', name: 'Sombrero Mago', emoji: '🎩', price: 750, purchased: false, equipped: false },
+    { id: 'net', name: 'Red de Pesca', emoji: '🕸️', price: 900, purchased: false, equipped: false },
+    { id: 'sack', name: 'Saco de Tela', emoji: '💰', price: 1200, purchased: false, equipped: false },
+    { id: 'gift_box', name: 'Caja Regalo', emoji: '🎁', price: 1500, purchased: false, equipped: false },
+    { id: 'alien_ship', name: 'Rayo OVNI', emoji: '🛸', price: 1800, purchased: false, equipped: false },
+    { id: 'treasure_chest', name: 'Cofre Pirata', emoji: '🏴‍☠️', price: 2500, purchased: false, equipped: false }
 ];
 
-/* ==================================================
-   Comandos predeterminados - UI inyectada dinámicamente
-   Este script añade una "pestaña" (sección) dentro del
-   panel de admin con comandos rápidos para copiar/enviar
-   al chat local.
-   No requiere modificar index.html porque se inyecta.
-   ==================================================*/
+// LÓGICA DE JUEGO
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-const comandosPredeterminados = [
-    { nombre: 'Saludo', comando: '/saludo ¡Hola a todos! 👋' },
-    { nombre: 'Reclamar Recompensa', comando: '/reclamar recompensa' },
-    { nombre: 'Anuncio', comando: '/anuncio Atención: nuevo evento empieza en 10 minutos.' },
-    { nombre: 'Reset', comando: '/reset jugador' }
-];
+let coins = 0;
+let isShopOpen = false;
 
-function copiarAlPortapapeles(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text);
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let player = { x: canvas.width / 2, y: canvas.height - 100, size: 60 };
+let coinItem = { x: Math.random() * (canvas.width - 40), y: -50, size: 40, speed: 5 };
+
+canvas.addEventListener('mousemove', (e) => {
+    if (!isShopOpen) {
+        player.x = e.clientX - player.size / 2;
+        if (player.x < 0) player.x = 0;
+        if (player.x > canvas.width - player.size) player.x = canvas.width - player.size;
     }
-    // Fallback
-    return new Promise((resolve, reject) => {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            resolve();
-        } catch (err) {
-            document.body.removeChild(ta);
-            reject(err);
+});
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const currentSkin = skinsShop.find(s => s.equipped).emoji;
+
+    // Dibujar Cesta (Jugador)
+    ctx.font = `${player.size}px Arial`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(currentSkin, player.x, player.y);
+
+    // Dibujar Moneda
+    ctx.font = `${coinItem.size}px Arial`;
+    ctx.fillText('🪙', coinItem.x, coinItem.y);
+
+    // Marcador
+    ctx.fillStyle = '#000';
+    ctx.font = "bold 24px 'Courier New', Courier, monospace";
+    ctx.fillText(`Monedas: ${coins}`, 20, 90);
+}
+
+function update() {
+    if (isShopOpen) return;
+    coinItem.y += coinItem.speed;
+
+    if (
+        coinItem.y + coinItem.size >= player.y &&
+        coinItem.x + coinItem.size >= player.x &&
+        coinItem.x <= player.x + player.size &&
+        coinItem.y <= player.y + player.size
+    ) {
+        coins += 10;
+        resetCoin();
+    }
+
+    if (coinItem.y > canvas.height) {
+        resetCoin();
+    }
+}
+
+function resetCoin() {
+    coinItem.y = -50;
+    coinItem.x = Math.random() * (canvas.width - coinItem.size);
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// CONTROL DE TIENDA
+function toggleShop() {
+    const modal = document.getElementById('shopModal');
+    modal.classList.toggle('active');
+    isShopOpen = modal.classList.contains('active');
+    if (isShopOpen) {
+        renderShop();
+    }
+}
+
+function renderShop() {
+    const grid = document.getElementById('skinsGrid');
+    document.getElementById('shopCoins').innerText = coins;
+    grid.innerHTML = '';
+
+    skinsShop.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `shop-item ${item.equipped ? 'equipped' : item.purchased ? 'purchased' : ''}`;
+        
+        let btnText = 'Comprar';
+        let btnClass = 'btn-buy';
+        
+        if (item.equipped) {
+            btnText = 'Equipado';
+            btnClass = 'btn-equipped';
+        } else if (item.purchased) {
+            btnText = 'Equipar';
+            btnClass = 'btn-equip';
         }
+
+        itemDiv.innerHTML = `
+            ${item.price > 1000 ? '<span class="badge-new">ÉPICO</span>' : ''}
+            <span class="item-emoji">${item.emoji}</span>
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">${item.purchased ? 'Obtenido' : '💰 ' + item.price}</div>
+            <button class="item-btn ${btnClass}" ${!item.purchased && coins < item.price ? 'disabled' : ''} onclick="handleItemAction('${item.id}')">${btnText}</button>
+        `;
+        grid.appendChild(itemDiv);
     });
 }
 
-function enviarAlChatLocal(text) {
-    // Intenta usar la UI existente: llenar input y disparar el botón de enviar
-    const chatInput = document.getElementById('chatInput');
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatMessages = document.getElementById('chatMessages');
+function handleItemAction(id) {
+    const item = skinsShop.find(s => s.id === id);
+    if (!item) return;
 
-    if (chatInput && chatSendBtn) {
-        chatInput.value = text;
-        // Si la página tiene lógica para el evento click, dispararla; sino añadimos el mensaje manualmente
-        chatSendBtn.click();
-
-        // Si después de un pequeño delay el mensaje no se añadió, lo añadimos manualmente
-        setTimeout(() => {
-            if (chatMessages && !chatMessages.innerText.includes(text)) {
-                appendChatMessage('Admin', text, true);
-            }
-        }, 150);
-        return;
-    }
-
-    // Si no existe la UI, intentamos añadir directamente al contenedor de mensajes
-    if (chatMessages) {
-        appendChatMessage('Admin', text, true);
+    if (!item.purchased) {
+        if (coins >= item.price) {
+            coins -= item.price;
+            item.purchased = true;
+        } else {
+            alert('¡Te faltan monedas! Sigue jugando para conseguir más.');
+            return;
+        }
     } else {
-        console.warn('No se encontró la UI de chat para enviar el comando.');
+        skinsShop.forEach(s => s.equipped = false);
+        item.equipped = true;
+        document.getElementById('currentAvatar').innerText = item.emoji;
+    }
+    renderShop();
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            alert(`Error: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
     }
 }
 
-function appendChatMessage(username, text, isSystem = false) {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-
-    const msg = document.createElement('div');
-    msg.className = 'chat-message' + (isSystem ? ' chat-system' : '');
-
-    const header = document.createElement('div');
-    header.className = 'chat-message-header';
-
-    const userSpan = document.createElement('div');
-    userSpan.className = 'chat-message-username';
-    userSpan.textContent = username;
-
-    const timeSpan = document.createElement('div');
-    timeSpan.className = 'chat-message-time';
-    const now = new Date();
-    timeSpan.textContent = now.toLocaleTimeString();
-
-    header.appendChild(userSpan);
-    header.appendChild(timeSpan);
-
-    const textDiv = document.createElement('div');
-    textDiv.className = 'chat-message-text';
-    textDiv.textContent = text;
-
-    msg.appendChild(header);
-    msg.appendChild(textDiv);
-
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function crearSeccionComandos() {
-    const adminPanel = document.getElementById('adminPanel');
-    if (!adminPanel) {
-        console.warn('No se encontró adminPanel para insertar la sección de comandos.');
-        return;
-    }
-
-    // Crear contenedor
-    const section = document.createElement('div');
-    section.className = 'config-group';
-
-    const label = document.createElement('label');
-    label.textContent = 'Comandos predeterminados';
-    section.appendChild(label);
-
-    // Lista de comandos
-    comandosPredeterminados.forEach(cmd => {
-        const item = document.createElement('div');
-        item.style.display = 'flex';
-        item.style.gap = '8px';
-        item.style.marginBottom = '8px';
-        item.style.alignItems = 'center';
-
-        const name = document.createElement('div');
-        name.style.flex = '1';
-        name.style.color = '#87CEEB';
-        name.style.fontSize = '13px';
-        name.textContent = cmd.nombre + ' — ' + cmd.comando;
-
-        const btnCopy = document.createElement('button');
-        btnCopy.className = 'admin-btn admin-btn-secondary';
-        btnCopy.style.flex = '0 0 auto';
-        btnCopy.textContent = 'Copiar';
-        btnCopy.title = 'Copiar al portapapeles';
-        btnCopy.addEventListener('click', () => {
-            copiarAlPortapapeles(cmd.comando)
-                .then(() => {
-                    btnCopy.textContent = 'Copiado';
-                    setTimeout(() => btnCopy.textContent = 'Copiar', 1200);
-                })
-                .catch(() => alert('No se pudo copiar en este navegador'));
-        });
-
-        const btnSend = document.createElement('button');
-        btnSend.className = 'admin-btn admin-btn-primary';
-        btnSend.style.flex = '0 0 auto';
-        btnSend.textContent = 'Enviar';
-        btnSend.title = 'Enviar al chat (local)';
-        btnSend.addEventListener('click', () => {
-            enviarAlChatLocal(cmd.comando);
-            btnSend.textContent = 'Enviado';
-            setTimeout(() => btnSend.textContent = 'Enviar', 900);
-        });
-
-        item.appendChild(name);
-        item.appendChild(btnCopy);
-        item.appendChild(btnSend);
-        section.appendChild(item);
-    });
-
-    // Insertar al final del panel
-    adminPanel.appendChild(section);
-}
-
-// Inyectar al cargar la página
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', crearSeccionComandos);
-} else {
-    crearSeccionComandos();
-}
+// Iniciar juego
+gameLoop();
