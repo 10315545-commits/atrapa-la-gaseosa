@@ -126,6 +126,8 @@ button{cursor:pointer}
 .rainbow-owner-name{font-weight:900;background:linear-gradient(90deg,#ff0000,#ff8a00,#ffee00,#22ff00,#00e5ff,#1877ff,#8a2be2,#ff00aa,#ff0000);background-size:400% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ownerRainbow 2.2s linear infinite}
 .owner-badge{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:4px;background:linear-gradient(135deg,#ffd700,#ff9800);color:#111;font-size:9px;font-weight:900;box-shadow:0 0 8px rgba(255,215,0,.55)}
 @keyframes ownerRainbow{to{background-position:400% 0}}
+#fpsCounter{position:fixed;right:20px;top:82px;z-index:25;background:rgba(0,0,0,.65);color:#7CFF7C;border:1px solid #7CFF7C;border-radius:7px;padding:5px 9px;font:bold 12px Arial;pointer-events:none;text-shadow:0 0 6px #000}
+@media(max-width:600px){#fpsCounter{right:10px;top:70px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -266,7 +268,13 @@ const SHOP = {
     {id:"basket6",name:"Arcoíris",visual:"🌈",price:250,colors:null,description:"Todos los colores"},
     {id:"basket7",name:"Neón",visual:"💜",price:280,colors:["#1a0033","#ff00ff"],description:"Luz neón"},
     {id:"basket8",name:"Veneno",visual:"☠️",price:320,colors:["#39ff14","#006400"],description:"Tóxica"},
-    {id:"basket9",name:"Oro",visual:"🏆",price:500,colors:["#ffd700","#b8860b"],description:"La más valiosa"}
+    {id:"basket9",name:"Oro",visual:"🏆",price:500,colors:["#ffd700","#b8860b"],description:"La más valiosa"},
+    {id:"basket10",name:"Lava",visual:"🌋",price:650,colors:["#ff8c00","#8b0000"],description:"Parece salir de un volcán"},
+    {id:"basket11",name:"Galaxia",visual:"🌌",price:800,colors:["#12002f","#5f27cd"],description:"Una cesta del espacio"},
+    {id:"basket12",name:"Fantasma",visual:"👻",price:725,colors:["#eefcff","#8ea7ff"],description:"Casi transparente"},
+    {id:"basket13",name:"Plasma",visual:"🌀",price:950,colors:["#00ffff","#7b00ff"],description:"Energía concentrada"},
+    {id:"basket14",name:"Magma",visual:"♨️",price:1100,colors:["#fff000","#ff3300"],description:"Calor extremo"},
+    {id:"basket15",name:"Vacío",visual:"🕳️",price:1500,colors:["#050505","#2b2b2b"],description:"La cesta más oscura"}
   ],
   coins: [
     {id:"ownerCoin",name:"OWNER COIN",visual:"👑",price:999999,ownerOnly:true,color:"#ffd700",trail:"👑",description:"Moneda exclusiva del dueño"},
@@ -275,7 +283,16 @@ const SHOP = {
     {id:"coin3",name:"Zafiro",visual:"🔵",price:220,color:"#00bfff",trail:"💧",description:"Azul veloz"},
     {id:"coin4",name:"Rubí",visual:"🔴",price:260,color:"#ff1744",trail:"🔥",description:"Roja y ardiente"},
     {id:"coin5",name:"Arcoíris",visual:"🌈",price:350,color:"#ff69b4",trail:"🌈",description:"Cambia de color"},
-    {id:"coin6",name:"Neón",visual:"💠",price:450,color:"#ff00ff",trail:"⚡",description:"Efecto eléctrico"}
+    {id:"coin6",name:"Neón",visual:"💠",price:450,color:"#ff00ff",trail:"⚡",description:"Efecto eléctrico"},
+    {id:"coin7",name:"Amatista",visual:"🔮",price:600,color:"#9b59ff",trail:"💜",description:"Energía misteriosa"},
+    {id:"coin8",name:"Sol",visual:"☀️",price:700,color:"#ffae00",trail:"☀️",description:"Brilla como una estrella"},
+    {id:"coin9",name:"Luna",visual:"🌙",price:750,color:"#b8d8ff",trail:"⭐",description:"Fría y luminosa"},
+    {id:"coin10",name:"Infernal",visual:"🔥",price:900,color:"#ff4500",trail:"🔥",description:"Una moneda en llamas"},
+    {id:"coin11",name:"Diamante",visual:"💎",price:1100,color:"#e8ffff",trail:"💎",description:"Ultra brillante"},
+    {id:"coin12",name:"Galaxia",visual:"🌌",price:1300,color:"#7c4dff",trail:"✨",description:"Trae el cosmos a la partida"},
+    {id:"coin13",name:"Trueno",visual:"⚡",price:1500,color:"#00e5ff",trail:"⚡",description:"Carga eléctrica intensa"},
+    {id:"coin14",name:"Void",visual:"🕳️",price:1800,color:"#1b0b2f",trail:"🟣",description:"Una moneda del vacío"},
+    {id:"coin15",name:"Cristal",visual:"🔷",price:2000,color:"#00d9ff",trail:"❄️",description:"Cristal de energía"}
   ]
 };
 
@@ -798,7 +815,22 @@ function startRandomEvents(){
 /* ==========================================================
    17. BUCLE PRINCIPAL
 ========================================================== */
-function render(){
+let fpsFrames=0;
+let fpsValue=0;
+let fpsLast=performance.now();
+function updateFPS(now){
+ fpsFrames++;
+ if(now-fpsLast>=500){
+  fpsValue=Math.round((fpsFrames*1000)/(now-fpsLast));
+  fpsFrames=0;
+  fpsLast=now;
+  const el=document.getElementById("fpsCounter");
+  if(el) el.textContent=`FPS: ${fpsValue}`;
+ }
+}
+
+function render(now=performance.now()){
+  updateFPS(now);
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawHUD();
   drawBasketSkin();
