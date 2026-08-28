@@ -1,951 +1,985 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atrapa la Moneda — Chaos Edition</title>
-<style>
-/* =========================
-   1. BASE
-========================= */
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden}
-body{font-family:"Courier New",monospace;background:#171717;color:#fff}
-button,input{font:inherit}
-button{cursor:pointer}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atrapa la Moneda - Full Skins</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #202020;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: none;
+        }
+        .fullscreen-btn, .shop-button, .chat-toggle-btn, .admin-button, .sound-btn, .pause-btn {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        .fullscreen-btn { top: 20px; right: 20px; background: linear-gradient(135deg, #667eea, #764ba2); }
+        .shop-button { top: 20px; left: 20px; background: linear-gradient(135deg, #ffa500, #ff6b00); }
+        .sound-btn { top: 20px; right: 80px; background: linear-gradient(135deg, #4caf50, #2e7d32); }
+        .pause-btn { top: 20px; right: 140px; background: linear-gradient(135deg, #2196F3, #1565C0); display: none; }
+        .fullscreen-btn:hover, .shop-button:hover, .sound-btn:hover, .pause-btn:hover { transform: scale(1.1); }
 
-/* =========================
-   2. JUEGO
-========================= */
-#gameContainer{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#87ceeb,#e8f9ff)}
-#gameCanvas{display:block;width:100%;height:100%;cursor:none}
+        .shop-badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #d32f2f;
+            color: white;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
 
-.start-screen,.pause-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
-.start-screen{z-index:40;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-.start-screen.hidden{display:none}
-.game-title{font-size:clamp(34px,7vw,70px);font-weight:900;text-shadow:0 4px 12px #0006}
-.game-coin{font-size:clamp(60px,10vw,110px);margin:15px;animation:coinSpin 2s linear infinite}
-.start-instruction{font-size:clamp(15px,3vw,22px);animation:pulse 1.5s infinite}
-.highscore-text{margin-top:15px;color:#ffe066;font-size:clamp(14px,2.5vw,19px)}
-.pause-overlay{z-index:35;display:none;background:#0009;font-size:52px;font-weight:900}
-.pause-overlay.active{display:flex}
-@keyframes coinSpin{50%{transform:rotateY(180deg) scale(1.08)}}
-@keyframes pulse{50%{opacity:.55}}
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #ffa500;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 950px;
+            width: 92%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ffa500;
+            padding-bottom: 15px;
+        }
+        .modal-header h2 { color: #ffa500; font-size: 26px; }
+        .modal-close { background: none; border: none; color: #ffa500; font-size: 28px; cursor: pointer; }
 
-/* =========================
-   3. BOTONES
-========================= */
-.floating-btn{position:fixed;z-index:70;width:50px;height:50px;border:0;border-radius:50%;color:#fff;font-size:20px;box-shadow:0 5px 18px #0005;transition:.2s}
-.floating-btn:hover{transform:scale(1.08)}
-#shopBtn{top:20px;left:20px;background:linear-gradient(135deg,#ffa500,#ff6b00)}
-#soundBtn{top:20px;right:80px;background:linear-gradient(135deg,#4caf50,#2e7d32)}
-#pauseBtn{top:20px;right:140px;background:linear-gradient(135deg,#2196f3,#1565c0);display:none}
-#fullscreenBtn{top:20px;right:20px;background:linear-gradient(135deg,#667eea,#764ba2)}
-#chatToggleBtn{bottom:20px;left:20px;background:linear-gradient(135deg,#667eea,#764ba2)}
-#adminBtn{bottom:20px;right:20px;background:linear-gradient(135deg,#455a64,#263238);font-size:22px}
-.badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;background:#d32f2f;color:#fff;font-size:11px;font-weight:900}
+        .player-info {
+            background: #252525;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .player-stats { text-align: center; }
+        .player-avatar { font-size: 70px; margin-bottom: 8px; }
+        .stat-label { color: #87CEEB; font-size: 12px; font-weight: bold; }
+        .stat-value { color: #FFD700; font-size: 22px; font-weight: bold; }
 
-/* =========================
-   4. MODAL / TIENDA
-========================= */
-.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:#000b;padding:20px}
-.modal.active{display:flex}
-.modal-content{width:min(950px,96vw);max-height:92vh;overflow:auto;background:#1a1a1a;border:2px solid #ffa500;border-radius:15px;padding:25px;box-shadow:0 20px 60px #000b}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:18px;border-bottom:2px solid #ffa500}
-.modal-header h2{color:#ffa500}
-.close-btn{background:none;border:0;color:#ffa500;font-size:28px}
-.player-info{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;background:#252525;border-radius:10px;padding:15px;text-align:center}
-.player-stat-value{font-size:28px;color:#ffd700;margin:5px 0}
-.player-stat-label{font-size:11px;color:#9bdfff}
-.section-title{color:#ffa500;margin:15px 0 10px;border-bottom:1px solid #555;padding-bottom:8px}
-.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
-.shop-item{position:relative;background:#252525;border:2px solid #444;border-radius:10px;padding:14px;text-align:center;transition:.2s}
-.shop-item:hover{transform:translateY(-4px);border-color:#ffa500}
-.shop-item.equipped{border-color:#ffd700;box-shadow:0 0 18px #ffd70055}
-.item-visual{height:72px;display:flex;align-items:center;justify-content:center;font-size:54px;margin-bottom:5px}
-.item-name{min-height:32px;color:#9bdfff;font-size:12px;font-weight:900}
-.item-price{margin:7px 0;color:#ffd700;font-size:13px;font-weight:900}
-.item-description{min-height:31px;color:#aaa;font-size:10px}
-.item-btn{width:100%;border:0;border-radius:5px;padding:8px;margin-top:8px;font-size:11px;font-weight:900;color:#fff}
-.buy-btn{background:linear-gradient(135deg,#ffa500,#ff6b00)}
-.equip-btn{background:#2196f3}
-.equipped-btn{background:#4caf50}
-.item-btn:disabled{opacity:.45;cursor:not-allowed}
-.item-badge{position:absolute;top:5px;right:5px;padding:3px 6px;border-radius:4px;background:#d32f2f;color:#fff;font-size:9px;font-weight:900}
+        .shop-section { margin-bottom: 28px; }
+        .section-title {
+            color: #ffa500;
+            font-size: 18px;
+            margin-bottom: 14px;
+            border-bottom: 2px solid #ffa500;
+            padding-bottom: 8px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .shop-item {
+            background: #252525;
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .shop-item:hover {
+            border-color: #ffa500;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(255,165,0,0.25);
+        }
+        .shop-item.purchased { border-color: #4caf50; background: #1a3a1a; }
+        .shop-item.equipped {
+            border-color: #FFD700;
+            background: #2a2a0a;
+            box-shadow: 0 0 18px rgba(255,215,0,0.45);
+        }
+        .item-emoji { font-size: 48px; margin-bottom: 6px; display: block; }
+        .item-name { color: #87CEEB; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
+        .item-price { color: #FFD700; font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+        .item-btn {
+            width: 100%;
+            padding: 7px;
+            border: none;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-buy { background: linear-gradient(135deg, #ffa500, #ff6b00); color: white; }
+        .btn-buy:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-equipped { background: #4caf50; color: white; }
+        .btn-equip { background: #2196F3; color: white; }
+        .badge-new {
+            position: absolute; top: 4px; right: 4px;
+            background: #d32f2f; color: white;
+            padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: bold;
+        }
+        .badge-popular {
+            position: absolute; top: 4px; right: 4px;
+            background: #ffa500; color: #000;
+            padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: bold;
+        }
 
-/* =========================
-   5. CHAT
-========================= */
-.chat-container{position:fixed;left:20px;bottom:20px;z-index:80;width:350px;height:480px;background:#1a1a1a;border:2px solid #667eea;border-radius:10px;display:flex;flex-direction:column;box-shadow:0 10px 40px #0008}
-.chat-container.hidden{display:none}
-.chat-header{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px 8px 0 0;font-weight:900}
-.chat-close{background:#ffffff22;border:0;color:#fff;width:26px;height:26px;border-radius:50%}
-.chat-messages{flex:1;overflow-y:auto;padding:12px}
-.chat-message{background:#252525;border-left:3px solid #667eea;border-radius:5px;padding:9px 10px;margin-bottom:8px;font-size:12px}
-.chat-message.system{background:#0d47a1;border-left-color:#4caf50}
-.chat-message-user{color:#87ceeb;font-weight:900}
-.chat-message-time{float:right;color:#777;font-size:10px}
-.chat-message-text{margin-top:4px;word-break:break-word}
-.chat-input-area{display:flex;gap:8px;padding:10px;background:#252525}
-.chat-input{flex:1;min-width:0;background:#111;color:#fff;border:1px solid #667eea;border-radius:5px;padding:8px}
-.chat-send{width:42px;border:0;border-radius:5px;background:#667eea;color:#fff}
+        .chat-container {
+            position: fixed; bottom: 20px; left: 20px;
+            width: 340px; height: 480px;
+            background: #1a1a1a;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            display: flex; flex-direction: column;
+            z-index: 98;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; padding: 14px;
+            border-radius: 8px 8px 0 0;
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: bold;
+        }
+        .chat-close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none; color: white;
+            width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+        }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .chat-message {
+            background: #252525;
+            padding: 9px 11px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        .chat-message-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .chat-message-username { color: #87CEEB; font-size: 11px; font-weight: bold; }
+        .chat-message-badge {
+            background: #FFD700; color: #000;
+            padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: bold;
+        }
+        .chat-message-time { color: #666; font-size: 10px; }
+        .chat-message-text { color: #fff; font-size: 12px; word-wrap: break-word; }
+        .chat-system { background: #0d47a1; border-left-color: #4caf50; }
+        .chat-system .chat-message-username { color: #4caf50; }
+        .chat-input-area {
+            display: flex; gap: 8px; padding: 10px;
+            background: #252525; border-top: 1px solid #667eea;
+        }
+        .chat-input {
+            flex: 1; background: #1a1a1a; border: 1px solid #667eea;
+            color: #fff; padding: 8px; border-radius: 5px; font-size: 12px;
+        }
+        .chat-send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; color: white; width: 38px; height: 38px;
+            border-radius: 5px; cursor: pointer; font-size: 16px;
+        }
+        .chat-toggle-btn {
+            bottom: 20px; left: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        .chat-toggle-btn.hidden, .chat-container.hidden { display: none; }
+        .chat-notification {
+            position: absolute; top: 4px; right: 4px;
+            background: #d32f2f; color: white;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: bold;
+        }
 
-/* =========================
-   6. ADMIN
-========================= */
-.admin-panel{position:fixed;right:20px;bottom:80px;z-index:90;width:350px;max-height:75vh;overflow:auto;background:#1a1a1a;border:2px solid #667eea;border-radius:10px;padding:18px;display:none;box-shadow:0 10px 40px #0008}
-.admin-panel.active{display:block}
-.admin-panel h2{color:#9aa8ff;border-bottom:2px solid #667eea;padding-bottom:10px;margin-bottom:12px}
-.config-group{background:#252525;border-left:3px solid #667eea;border-radius:6px;padding:10px;margin:8px 0}
-.config-group label{display:block;color:#9bdfff;font-size:11px;font-weight:900;margin-bottom:6px}
-.config-group input{width:100%;padding:7px;border:1px solid #667eea;border-radius:4px;background:#111;color:#fff}
-.admin-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.admin-btn{flex:1;border:0;border-radius:5px;padding:9px;color:#fff;font-size:11px;font-weight:900}
-.admin-primary{background:#667eea}.admin-secondary{background:#555}.admin-danger{background:#d32f2f}
-.admin-status{margin-top:10px;color:#ffd700;font-size:12px;line-height:1.8}
+        .admin-button {
+            bottom: 20px; right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-size: 22px; z-index: 100;
+        }
+        .admin-panel {
+            position: fixed; bottom: 80px; right: 20px;
+            width: 340px; background: #1a1a1a;
+            border: 2px solid #667eea; border-radius: 10px;
+            padding: 18px; display: none; z-index: 101;
+            max-height: 480px; overflow-y: auto;
+        }
+        .admin-panel.active { display: block; }
+        .admin-panel h2 {
+            color: #667eea; margin-bottom: 12px; font-size: 17px;
+            border-bottom: 2px solid #667eea; padding-bottom: 8px;
+        }
+        .config-group {
+            margin-bottom: 12px; padding: 10px;
+            background: #252525; border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .config-group label {
+            display: block; color: #87CEEB; font-size: 11px;
+            margin-bottom: 6px; font-weight: bold;
+        }
+        .config-group input[type="number"] {
+            width: 100%; padding: 7px; background: #1a1a1a;
+            border: 1px solid #667eea; color: #fff; border-radius: 5px; font-size: 12px;
+        }
+        .config-value { color: #FFD700; font-size: 11px; margin-top: 4px; font-weight: bold; }
+        .button-group { display: flex; gap: 8px; margin-top: 8px; }
+        .admin-btn {
+            flex: 1; padding: 9px; border: none; border-radius: 5px;
+            color: white; cursor: pointer; font-size: 12px; font-weight: bold;
+        }
+        .admin-btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .admin-btn-secondary { background: #444; }
+        .admin-btn-danger { background: #d32f2f; }
+        .info-box {
+            background: #0d47a1; color: #87CEEB;
+            padding: 9px; border-radius: 5px; font-size: 11px; margin-bottom: 10px;
+        }
+        .divider { height: 1px; background: #667eea; margin: 12px 0; opacity: 0.3; }
 
-/* =========================
-   7. EFECTOS
-========================= */
-.particle{position:fixed;z-index:85;pointer-events:none;font-size:26px;animation:floatUp 1s ease-out forwards}
-@keyframes floatUp{to{opacity:0;transform:translateY(-90px) scale(.4)}}
-.toast{position:fixed;top:16%;left:50%;z-index:120;transform:translate(-50%,-10px);padding:10px 18px;border:2px solid #ffd700;border-radius:10px;background:#111e;color:#fff;font-weight:900;opacity:0;pointer-events:none;transition:.25s;text-align:center}
-.toast.show{opacity:1;transform:translate(-50%,0)}
+        .particle {
+            position: fixed; pointer-events: none;
+            font-size: 26px; animation: floatUp 1s ease-out forwards; z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-90px) scale(0.4); }
+        }
 
-@media(max-width:600px){
- .floating-btn{width:44px;height:44px}
- .player-info{grid-template-columns:repeat(2,1fr)}
- .chat-container{left:10px;bottom:10px;width:calc(100vw - 20px);height:55vh}
- .admin-panel{right:10px;bottom:65px;width:calc(100vw - 20px)}
-}
-</style>
+        .start-screen {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 50;
+        }
+        .start-screen.hidden { display: none; }
+        .game-title {
+            font-size: clamp(34px, 7vw, 68px);
+            color: white; margin-bottom: 12px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .game-coin {
+            font-size: clamp(48px, 9vw, 95px);
+            margin: 12px 0;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0%, 100% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+        }
+        .start-instruction {
+            font-size: clamp(14px, 3.2vw, 20px);
+            color: rgba(255,255,255,0.9);
+            margin-top: 20px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        .highscore-text { color: #FFD700; font-size: clamp(13px, 2.8vw, 17px); margin-top: 12px; }
+
+        .pause-overlay {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none; justify-content: center; align-items: center;
+            z-index: 40; color: white; font-size: 46px; font-weight: bold;
+        }
+        .pause-overlay.active { display: flex; }
+    </style>
 </head>
 <body>
+
 <div id="gameContainer">
-  <canvas id="gameCanvas"></canvas>
-
-  <div id="startScreen" class="start-screen">
-    <div class="game-title">🎮 ATRAPA LA MONEDA</div>
-    <div class="game-coin">🪙</div>
-    <div class="start-instruction">Haz clic o presiona ESPACIO para comenzar</div>
-    <div id="startHighScore" class="highscore-text">🏆 Récord: 0</div>
-  </div>
-
-  <div id="pauseOverlay" class="pause-overlay">⏸ PAUSA</div>
-</div>
-
-<button id="shopBtn" class="floating-btn" title="Tienda">🛍️<span id="shopBadge" class="badge">0</span></button>
-<button id="soundBtn" class="floating-btn" title="Sonido">🔊</button>
-<button id="pauseBtn" class="floating-btn" title="Pausa">⏸</button>
-<button id="fullscreenBtn" class="floating-btn" title="Pantalla completa">⛶</button>
-<button id="chatToggleBtn" class="floating-btn" title="Chat">💬</button>
-<button id="adminBtn" class="floating-btn" title="Admin">⚙️</button>
-
-<div id="toast" class="toast"></div>
-
-<!-- TIENDA -->
-<div id="shopModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header"><h2>🛍️ Tienda</h2><button id="shopClose" class="close-btn">✕</button></div>
-    <div class="player-info">
-      <div><div>👤</div><div id="playerAvatar" class="player-stat-value">👤</div><div class="player-stat-label">Avatar</div></div>
-      <div><div>💰</div><div id="playerCoins" class="player-stat-value">1000</div><div class="player-stat-label">Monedas</div></div>
-      <div><div>🧺</div><div id="playerBasket" class="player-stat-value">🧺</div><div class="player-stat-label">Cesta</div></div>
-      <div><div>⭐</div><div id="playerLevel" class="player-stat-value">1</div><div class="player-stat-label">Nivel</div></div>
+    <div class="start-screen" id="startScreen">
+        <div class="game-title">🎮 ATRAPA LA MONEDA</div>
+        <div class="game-coin">🪙</div>
+        <div class="start-instruction">Haz clic o Espacio para comenzar</div>
+        <div class="highscore-text" id="startHighScore">🏆 Récord: 0</div>
     </div>
-    <h3 class="section-title">👤 Avatares</h3>
-    <div id="avatarsGrid" class="items-grid"></div>
-    <h3 class="section-title">🧺 Skins de Cesta</h3>
-    <div id="skinsGrid" class="items-grid"></div>
-    <h3 class="section-title">🪙 Skins de Moneda</h3>
-    <div id="coinSkinsGrid" class="items-grid"></div>
-  </div>
+    <div class="pause-overlay" id="pauseOverlay">⏸ PAUSA</div>
+    <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- CHAT -->
-<div id="chatContainer" class="chat-container hidden">
-  <div class="chat-header"><span>💬 Chat Global</span><button id="chatCloseBtn" class="chat-close">✕</button></div>
-  <div id="chatMessages" class="chat-messages"></div>
-  <div class="chat-input-area"><input id="chatInput" class="chat-input" maxlength="100" placeholder="Tu mensaje..."><button id="chatSendBtn" class="chat-send">➤</button></div>
+<button class="fullscreen-btn" id="fullscreenBtn" title="Pantalla Completa">⛶</button>
+<button class="sound-btn" id="soundBtn" title="Sonido">🔊</button>
+<button class="pause-btn" id="pauseBtn" title="Pausa">⏸</button>
+
+<button class="shop-button" id="shopBtn" title="Tienda">🛍️
+    <div class="shop-badge" id="shopBadge">0</div>
+</button>
+
+<div class="modal" id="shopModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🛍️ Tienda</h2>
+            <button class="modal-close" id="shopClose">✕</button>
+        </div>
+        <div class="player-info">
+            <div class="player-stats">
+                <div class="player-avatar" id="playerAvatar">👤</div>
+                <div class="stat-label">Avatar</div>
+            </div>
+            <div class="player-stats">
+                <div class="stat-value" id="playerCoins">0</div>
+                <div class="stat-label">Monedas</div>
+            </div>
+            <div class="player-stats">
+                <div class="player-avatar" id="playerBasket">🧺</div>
+                <div class="stat-label">Cesta</div>
+            </div>
+        </div>
+        <div class="shop-section">
+            <div class="section-title">👤 Avatares</div>
+            <div class="items-grid" id="avatarsGrid"></div>
+        </div>
+        <div class="shop-section">
+            <div class="section-title">🧺 Skins de Cesta (14)</div>
+            <div class="items-grid" id="skinsGrid"></div>
+        </div>
+    </div>
 </div>
 
-<!-- ADMIN -->
-<div id="adminPanel" class="admin-panel">
-  <h2>⚙️ Panel de Admin</h2>
-  <div class="config-group"><label>⏱️ Tiempo inicial</label><input id="initialTime" type="number" min="5" max="120" value="30"></div>
-  <div class="config-group"><label>🎯 Velocidad inicial</label><input id="initialSpeed" type="number" min="1" max="20" step="0.5" value="4"></div>
-  <div class="config-group"><label>⚡ Incremento de velocidad</label><input id="speedIncrement" type="number" min="0" max="3" step="0.1" value="0.2"></div>
-  <div class="config-group"><label>💰 Puntos por moneda</label><input id="scorePerCoin" type="number" min="1" max="100" value="10"></div>
-  <div class="config-group"><label>🧺 Ancho de cesta</label><input id="basketWidth" type="number" min="40" max="180" value="80"></div>
-  <div class="admin-actions">
-    <button id="applyBtn" class="admin-btn admin-primary">✅ Aplicar</button>
-    <button id="resetBtn" class="admin-btn admin-secondary">↺ Reset</button>
-    <button id="clearBtn" class="admin-btn admin-danger">🗑️ Borrar guardado</button>
-  </div>
-  <div id="adminStatus" class="admin-status">Estado: 🟢 Parado<br>Puntos: 0<br>Tiempo: 30s<br>Combo: x1</div>
+<button class="chat-toggle-btn" id="chatToggleBtn" title="Chat">💬</button>
+<div class="chat-container" id="chatContainer">
+    <div class="chat-header">
+        <span>💬 Chat Global</span>
+        <button class="chat-close-btn" id="chatCloseBtn">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Tu mensaje...">
+        <button class="chat-send-btn" id="chatSendBtn">➤</button>
+    </div>
+</div>
+
+<button class="admin-button" id="adminBtn" title="Admin">⚙️</button>
+<div class="admin-panel" id="adminPanel">
+    <h2>Panel de Admin</h2>
+    <div class="info-box">Modifica parámetros en tiempo real.</div>
+    <div class="config-group">
+        <label>⏱️ Tiempo Inicial</label>
+        <input type="number" id="initialTime" min="5" max="120" value="30">
+        <div class="config-value" id="initialTimeValue">Actual: 30s</div>
+    </div>
+    <div class="config-group">
+        <label>🎯 Velocidad Inicial</label>
+        <input type="number" id="initialSpeed" min="1" max="20" step="0.5" value="4">
+        <div class="config-value" id="initialSpeedValue">Actual: 4</div>
+    </div>
+    <div class="config-group">
+        <label>⚡ Incremento Velocidad</label>
+        <input type="number" id="speedIncrement" min="0.1" max="2" step="0.1" value="0.2">
+        <div class="config-value" id="speedIncrementValue">Actual: 0.2</div>
+    </div>
+    <div class="config-group">
+        <label>💰 Puntos por Moneda</label>
+        <input type="number" id="scorePerCoin" min="1" max="100" value="10">
+        <div class="config-value" id="scorePerCoinValue">Actual: 10</div>
+    </div>
+    <div class="config-group">
+        <label>🧺 Ancho Cesta</label>
+        <input type="number" id="basketWidth" min="40" max="150" value="80">
+        <div class="config-value" id="basketWidthValue">Actual: 80</div>
+    </div>
+    <div class="config-group">
+        <label>🪙 Radio Moneda</label>
+        <input type="number" id="coinRadius" min="5" max="30" value="15">
+        <div class="config-value" id="coinRadiusValue">Actual: 15</div>
+    </div>
+    <div class="divider"></div>
+    <div class="config-group">
+        <div class="config-value" id="gameStatus">Estado: Inactivo</div>
+        <div class="config-value" id="gameScore">Puntos: 0</div>
+        <div class="config-value" id="gameTime">Tiempo: 0s</div>
+        <div class="config-value" id="gameCombo">Combo: x1</div>
+    </div>
+    <div class="divider"></div>
+    <div class="button-group">
+        <button class="admin-btn admin-btn-primary" id="applyBtn">✅ Aplicar</button>
+        <button class="admin-btn admin-btn-secondary" id="resetBtn">↺ Reset</button>
+    </div>
+    <div class="button-group">
+        <button class="admin-btn admin-btn-danger" id="clearBtn">🗑️ Limpiar</button>
+    </div>
 </div>
 
 <script>
-"use strict";
+const CONFIG = {
+    INITIAL_TIME: 30,
+    INITIAL_COIN_SPEED: 4,
+    SPEED_INCREMENT: 0.2,
+    SCORE_PER_COIN: 10,
+    FPS: 60,
+    BASKET_WIDTH: 80,
+    BASKET_HEIGHT: 22,
+    COIN_RADIUS: 15
+};
 
-/* ==========================================================
-   1. REFERENCIAS
-========================================================== */
+const SHOP_ITEMS = {
+    avatars: [
+        { id: 'avatar1', name: '👤 Clásico', emoji: '👤', price: 0, purchased: true },
+        { id: 'avatar2', name: '😎 Frío', emoji: '😎', price: 150 },
+        { id: 'avatar3', name: '🤖 Robot', emoji: '🤖', price: 200 },
+        { id: 'avatar4', name: '👑 Rey', emoji: '👑', price: 300, popular: true },
+        { id: 'avatar5', name: '🧙 Mago', emoji: '🧙', price: 250, new: true },
+        { id: 'avatar6', name: '🚀 Astronauta', emoji: '🚀', price: 350 }
+    ],
+    skins: [
+        { id: 'skin1', name: '🧺 Clásica', price: 0, purchased: true,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="#8B4513"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#5c2d0c"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin2', name: '✨ Mágica', price: 120, new: true,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x+w,y); g.addColorStop(0,'#FF1493'); g.addColorStop(0.5,'#00BFFF'); g.addColorStop(1,'#00FF7F'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#FFD700"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin3', name: '🔥 Fuego', price: 200,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#FFD700'); g.addColorStop(0.5,'#FF8C00'); g.addColorStop(1,'#FF4500'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#FF2400"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin4', name: '❄️ Hielo', price: 180,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x+w,y+h); g.addColorStop(0,'#E0FFFF'); g.addColorStop(0.5,'#ADD8E6'); g.addColorStop(1,'#00CED1'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#00BFFF"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin5', name: '💎 Diamante', price: 400, popular: true,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="#E5E4E2"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#B8860B"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.fillRect(x+5,y+3,8,8); ctx.fillRect(x+w-13,y+3,8,8); }},
+        { id: 'skin6', name: '🌈 Arcoíris', price: 250,
+            draw(ctx,x,y,w,h){ const c=['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#8B00FF']; const sh=h/6; for(let i=0;i<6;i++){ ctx.fillStyle=c[i]; ctx.fillRect(x,y+i*sh,w,sh); } ctx.strokeStyle="#FFD700"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin7', name: '💜 Neon', price: 280, new: true,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="#1a0033"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#FF00FF"; ctx.lineWidth=4; ctx.strokeRect(x,y,w,h); ctx.shadowColor="#FF00FF"; ctx.shadowBlur=12; ctx.strokeRect(x+2,y+2,w-4,h-4); ctx.shadowBlur=0; }},
+        { id: 'skin8', name: '☠️ Veneno', price: 320,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#39FF14'); g.addColorStop(1,'#006400'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#00FF00"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin9', name: '🏆 Oro', price: 500, popular: true,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#FFD700'); g.addColorStop(0.5,'#FFA500'); g.addColorStop(1,'#B8860B'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#FFF8DC"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin10', name: '🌌 Galaxy', price: 380, new: true,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x+w,y+h); g.addColorStop(0,'#0B0B2A'); g.addColorStop(0.4,'#2E1A47'); g.addColorStop(0.7,'#4A1942'); g.addColorStop(1,'#1A0A2E'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.fillStyle="#FFF"; for(let i=0;i<8;i++){ ctx.beginPath(); ctx.arc(x+8+i*10, y+6+((i%3)*5), 1.2, 0, Math.PI*2); ctx.fill(); } ctx.strokeStyle="#C77DFF"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin11', name: '💻 Hacker', price: 340,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="#001a00"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#00FF41"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); ctx.fillStyle="#00FF41"; ctx.font="10px monospace"; ctx.fillText("01", x+6, y+14); ctx.fillText("10", x+w-22, y+14); }},
+        { id: 'skin12', name: '🔵 Fuego Azul', price: 360,
+            draw(ctx,x,y,w,h){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#00E5FF'); g.addColorStop(0.5,'#2979FF'); g.addColorStop(1,'#0D47A1'); ctx.fillStyle=g; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#80D8FF"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); }},
+        { id: 'skin13', name: '🪞 Cristal', price: 420,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="rgba(200,240,255,0.7)"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#E0F7FA"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); ctx.fillStyle="rgba(255,255,255,0.5)"; ctx.fillRect(x+4,y+3,12,8); ctx.fillRect(x+w-18,y+4,10,6); }},
+        { id: 'skin14', name: '🖤 Oscura', price: 300,
+            draw(ctx,x,y,w,h){ ctx.fillStyle="#111"; ctx.fillRect(x,y,w,h); ctx.strokeStyle="#444"; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h); ctx.strokeStyle="#222"; ctx.lineWidth=2; ctx.strokeRect(x+3,y+3,w-6,h-6); }}
+    ]
+};
+
+const gameState = {
+    score: 0, highScore: 0, timeLeft: CONFIG.INITIAL_TIME,
+    isPlaying: false, isPaused: false,
+    gameInterval: null, timerInterval: null,
+    coins: 1000, selectedAvatar: 'avatar1', selectedSkin: 'skin1',
+    purchasedItems: { avatar1: true, skin1: true },
+    combo: 1, lastCatchTime: 0, soundEnabled: true
+};
+
+const chatState = {
+    username: `Jugador${Math.floor(Math.random()*1000)}`,
+    isOwner: true, isOpen: true, unreadMessages: 0
+};
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const gameContainer = document.getElementById("gameContainer");
 const startScreen = document.getElementById("startScreen");
 const pauseOverlay = document.getElementById("pauseOverlay");
 const pauseBtn = document.getElementById("pauseBtn");
 const soundBtn = document.getElementById("soundBtn");
-const toastEl = document.getElementById("toast");
 
-/* ==========================================================
-   2. CONFIGURACIÓN
-========================================================== */
-const CONFIG = {
-  initialTime: 30,
-  initialSpeed: 4,
-  speedIncrement: 0.2,
-  scorePerCoin: 10,
-  basketWidth: 80,
-  basketHeight: 22,
-  coinRadius: 15,
-  maxCombo: 10,
-  comboWindow: 1800
-};
-
-/* ==========================================================
-   3. TIENDA / SKINS
-   Las skins de verdad cambian lo que se ve en el juego.
-========================================================== */
-const SHOP = {
-  avatars: [
-    {id:"avatar1",name:"Clásico",visual:"👤",price:0,description:"El avatar original"},
-    {id:"avatar2",name:"Frío",visual:"😎",price:150,description:"Estilo relajado"},
-    {id:"avatar3",name:"Robot",visual:"🤖",price:200,description:"Modo robot"},
-    {id:"avatar4",name:"Rey",visual:"👑",price:300,description:"El jefe"},
-    {id:"avatar5",name:"Mago",visual:"🧙",price:250,description:"Poder mágico"},
-    {id:"avatar6",name:"Astronauta",visual:"🚀",price:350,description:"Hasta el espacio"},
-    {id:"avatar7",name:"Ninja",visual:"🥷",price:450,description:"Difícil de atrapar"},
-    {id:"avatar8",name:"Alien",visual:"👽",price:600,description:"Visitante"}
-  ],
-  baskets: [
-    {id:"basket1",name:"Clásica",visual:"🧺",price:0,colors:["#8b4513","#5c2d0c"],description:"Cesta original"},
-    {id:"basket2",name:"Mágica",visual:"✨",price:120,colors:["#ff1493","#00bfff"],description:"Brilla al atrapar"},
-    {id:"basket3",name:"Fuego",visual:"🔥",price:200,colors:["#ffd700","#ff4500"],description:"Muy caliente"},
-    {id:"basket4",name:"Hielo",visual:"❄️",price:180,colors:["#e0ffff","#00ced1"],description:"Congelada"},
-    {id:"basket5",name:"Diamante",visual:"💎",price:400,colors:["#eefcff","#45c9ff"],description:"Brilla muchísimo"},
-    {id:"basket6",name:"Arcoíris",visual:"🌈",price:250,colors:null,description:"Todos los colores"},
-    {id:"basket7",name:"Neón",visual:"💜",price:280,colors:["#1a0033","#ff00ff"],description:"Luz neón"},
-    {id:"basket8",name:"Veneno",visual:"☠️",price:320,colors:["#39ff14","#006400"],description:"Tóxica"},
-    {id:"basket9",name:"Oro",visual:"🏆",price:500,colors:["#ffd700","#b8860b"],description:"La más valiosa"}
-  ],
-  coins: [
-    {id:"coin1",name:"Dorada",visual:"🪙",price:0,color:"#ffd700",trail:"✨",description:"Moneda original"},
-    {id:"coin2",name:"Esmeralda",visual:"🟢",price:180,color:"#39ff14",trail:"💚",description:"Verde brillante"},
-    {id:"coin3",name:"Zafiro",visual:"🔵",price:220,color:"#00bfff",trail:"💧",description:"Azul veloz"},
-    {id:"coin4",name:"Rubí",visual:"🔴",price:260,color:"#ff1744",trail:"🔥",description:"Roja y ardiente"},
-    {id:"coin5",name:"Arcoíris",visual:"🌈",price:350,color:"#ff69b4",trail:"🌈",description:"Cambia de color"},
-    {id:"coin6",name:"Neón",visual:"💠",price:450,color:"#ff00ff",trail:"⚡",description:"Efecto eléctrico"}
-  ]
-};
-
-/* ==========================================================
-   4. ESTADO
-========================================================== */
-const state = {
-  score: 0,
-  highScore: 0,
-  timeLeft: CONFIG.initialTime,
-  coins: 1000,
-  level: 1,
-  xp: 0,
-  totalXP: 0,
-  combo: 1,
-  lastCatchTime: 0,
-  playing: false,
-  paused: false,
-  sound: true,
-  selectedAvatar: "avatar1",
-  selectedBasket: "basket1",
-  selectedCoinSkin: "coin1",
-  owned: {avatar1:true,basket1:true,coin1:true}
-};
-
-const player = {
-  name: `Jugador${Math.floor(Math.random()*1000)}`,
-  owner: true
-};
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    basket.y = canvas.height - 60;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 const basket = {
-  x: 0,
-  y: 0,
-  width: CONFIG.basketWidth,
-  height: CONFIG.basketHeight,
-  targetX: 0
+    x: canvas.width/2 - CONFIG.BASKET_WIDTH/2,
+    y: canvas.height - 60,
+    width: CONFIG.BASKET_WIDTH,
+    height: CONFIG.BASKET_HEIGHT,
+    targetX: canvas.width/2 - CONFIG.BASKET_WIDTH/2
 };
 
-const fallingCoin = {
-  x: 0,
-  y: -40,
-  radius: CONFIG.coinRadius,
-  speed: CONFIG.initialSpeed,
-  rotation: 0,
-  special: "normal"
+const coin = {
+    x: 0, y: -CONFIG.COIN_RADIUS*2,
+    radius: CONFIG.COIN_RADIUS,
+    speed: CONFIG.INITIAL_COIN_SPEED,
+    color: "#FFD700", rotation: 0
 };
 
-const keys = Object.create(null);
-let timerHandle = null;
-let eventHandle = null;
-let audioContext = null;
-let specialTrail = [];
-
-/* ==========================================================
-   5. UTILIDADES
-========================================================== */
-function clamp(value,min,max){return Math.max(min,Math.min(max,value))}
-function selectedCoinSkin(){return SHOP.coins.find(x=>x.id===state.selectedCoinSkin)||SHOP.coins[0]}
-function selectedBasketSkin(){return SHOP.baskets.find(x=>x.id===state.selectedBasket)||SHOP.baskets[0]}
-function selectedAvatar(){return SHOP.avatars.find(x=>x.id===state.selectedAvatar)||SHOP.avatars[0]}
-function showToast(text){
-  toastEl.textContent = text;
-  toastEl.classList.add("show");
-  clearTimeout(showToast.timeout);
-  showToast.timeout = setTimeout(()=>toastEl.classList.remove("show"),1600);
-}
-function escapeHtml(text){
-  return String(text).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[ch]));
+function playSound(type) {
+    if (!gameState.soundEnabled) return;
+    try {
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ac.createOscillator();
+        const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        if (type === 'catch') { o.frequency.value = 780; g.gain.value = 0.09; o.start(); o.stop(ac.currentTime + 0.09); }
+        else if (type === 'gameover') { o.frequency.value = 180; g.gain.value = 0.12; o.start(); o.stop(ac.currentTime + 0.35); }
+        else if (type === 'start') { o.frequency.value = 520; g.gain.value = 0.09; o.start(); o.stop(ac.currentTime + 0.12); }
+    } catch(e){}
 }
 
-/* ==========================================================
-   6. GUARDADO
-========================================================== */
-function saveState(){
-  localStorage.setItem("atrapaMonedaSave",JSON.stringify({
-    coins:state.coins,
-    highScore:state.highScore,
-    level:state.level,
-    xp:state.xp,
-    totalXP:state.totalXP,
-    sound:state.sound,
-    selectedAvatar:state.selectedAvatar,
-    selectedBasket:state.selectedBasket,
-    selectedCoinSkin:state.selectedCoinSkin,
-    owned:state.owned
-  }));
+document.getElementById("fullscreenBtn").addEventListener("click", () => {
+    if (!document.fullscreenElement) gameContainer.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen();
+});
+
+soundBtn.addEventListener("click", () => {
+    gameState.soundEnabled = !gameState.soundEnabled;
+    soundBtn.textContent = gameState.soundEnabled ? "🔊" : "🔇";
+    saveGameState();
+});
+
+function togglePause() {
+    if (!gameState.isPlaying) return;
+    gameState.isPaused = !gameState.isPaused;
+    pauseOverlay.classList.toggle("active", gameState.isPaused);
+    pauseBtn.textContent = gameState.isPaused ? "▶" : "⏸";
 }
+pauseBtn.addEventListener("click", togglePause);
 
-function loadState(){
-  try{
-    const saved = JSON.parse(localStorage.getItem("atrapaMonedaSave")||"null");
-    if(saved){
-      state.coins = Number.isFinite(saved.coins) ? saved.coins : state.coins;
-      state.highScore = Number.isFinite(saved.highScore) ? saved.highScore : 0;
-      state.level = Number.isFinite(saved.level) ? saved.level : 1;
-      state.xp = Number.isFinite(saved.xp) ? saved.xp : 0;
-      state.totalXP = Number.isFinite(saved.totalXP) ? saved.totalXP : 0;
-      state.sound = saved.sound !== false;
-      state.selectedAvatar = saved.selectedAvatar || "avatar1";
-      state.selectedBasket = saved.selectedBasket || "basket1";
-      state.selectedCoinSkin = saved.selectedCoinSkin || "coin1";
-      state.owned = {...state.owned,...(saved.owned||{})};
-    }
-  }catch(error){console.warn("No se pudo cargar el guardado.",error)}
-  document.getElementById("startHighScore").textContent = `🏆 Récord: ${state.highScore}`;
-  soundBtn.textContent = state.sound ? "🔊" : "🔇";
-}
+const shopBtn = document.getElementById("shopBtn");
+const shopModal = document.getElementById("shopModal");
+const shopClose = document.getElementById("shopClose");
+const shopBadge = document.getElementById("shopBadge");
+const playerCoins = document.getElementById("playerCoins");
+const playerAvatar = document.getElementById("playerAvatar");
+const playerBasket = document.getElementById("playerBasket");
 
-/* ==========================================================
-   7. AUDIO
-========================================================== */
-function playSound(type){
-  if(!state.sound)return;
-  try{
-    audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    oscillator.connect(gain);gain.connect(audioContext.destination);
-    const frequencies = {catch:820,start:520,level:1100,bad:180,event:680};
-    oscillator.frequency.value = frequencies[type] || 500;
-    gain.gain.value = 0.06;
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + (type === "bad" ? .22 : .1));
-  }catch(error){/* Audio bloqueado por navegador */}
-}
-
-/* ==========================================================
-   8. CANVAS / TAMAÑO
-========================================================== */
-function resizeCanvas(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  basket.y = canvas.height - 60;
-  basket.width = CONFIG.basketWidth;
-  basket.x = clamp(basket.x,0,Math.max(0,canvas.width-basket.width));
-  basket.targetX = clamp(basket.targetX,0,Math.max(0,canvas.width-basket.width));
-}
-window.addEventListener("resize",resizeCanvas);
-resizeCanvas();
-
-function resetCoin(){
-  fallingCoin.y = -fallingCoin.radius*2;
-  fallingCoin.x = fallingCoin.radius + Math.random()*(canvas.width-fallingCoin.radius*2);
-  fallingCoin.rotation = 0;
-  specialTrail = [];
-
-  const chance = Math.random();
-  if(chance < .08) fallingCoin.special = "lightning";
-  else if(chance < .13) fallingCoin.special = "diamond";
-  else if(chance < .17) fallingCoin.special = "trap";
-  else fallingCoin.special = "normal";
-}
-
-/* ==========================================================
-   9. PARTÍCULAS / EFECTOS
-========================================================== */
-function createParticles(x,y,count=7,emoji="✨"){
-  for(let i=0;i<count;i++){
-    const particle = document.createElement("div");
-    particle.className = "particle";
-    particle.textContent = emoji;
-    particle.style.left = `${x+(Math.random()-.5)*70}px`;
-    particle.style.top = `${y+(Math.random()-.5)*25}px`;
-    document.body.appendChild(particle);
-    setTimeout(()=>particle.remove(),1000);
-  }
-}
-
-/* ==========================================================
-   10. NIVELES / XP
-========================================================== */
-function xpNeeded(){return state.level*100}
-function addXP(amount){
-  state.xp += amount;
-  state.totalXP += amount;
-  while(state.xp >= xpNeeded()){
-    state.xp -= xpNeeded();
-    state.level++;
-    createParticles(canvas.width/2,canvas.height/2,18,"⭐");
-    showToast(`🎉 ¡NIVEL ${state.level}!`);
-    addSystemMessage(`🎉 ${player.name} subió al nivel ${state.level}!`);
-    playSound("level");
-  }
-}
-
-/* ==========================================================
-   11. DIBUJADO — SKIN DE CESTA
-========================================================== */
-function drawBasketSkin(){
-  const skin = selectedBasketSkin();
-  const {x,y,width,height} = basket;
-  ctx.save();
-
-  if(skin.id === "basket6"){
-    const stripeHeight = height/6;
-    const colors=["#ff0000","#ff7f00","#ffff00","#00ff00","#0000ff","#8b00ff"];
-    colors.forEach((color,index)=>{
-      ctx.fillStyle=color;
-      ctx.fillRect(x,y+index*stripeHeight,width,stripeHeight);
+function updateShopBadge() {
+    let missing = 0;
+    [...SHOP_ITEMS.avatars, ...SHOP_ITEMS.skins].forEach(i => {
+        if (!gameState.purchasedItems[i.id] && i.price > 0) missing++;
     });
-  }else{
-    const gradient = ctx.createLinearGradient(x,y,x+width,y+height);
-    gradient.addColorStop(0,skin.colors[0]);
-    gradient.addColorStop(1,skin.colors[1]);
-    ctx.fillStyle = gradient;
-    ctx.fillRect(x,y,width,height);
-  }
-
-  if(skin.id === "basket7" || skin.id === "basket5"){
-    ctx.shadowColor = skin.id === "basket7" ? "#ff00ff" : "#00eaff";
-    ctx.shadowBlur = 16;
-  }
-  ctx.strokeStyle="#fff";
-  ctx.lineWidth=2;
-  ctx.strokeRect(x,y,width,height);
-  ctx.shadowBlur=0;
-  ctx.restore();
+    shopBadge.textContent = missing;
+    shopBadge.style.display = missing > 0 ? "flex" : "none";
 }
 
-/* ==========================================================
-   12. DIBUJADO — JUGADOR / AVATAR
-   Se dibuja sobre la cesta para que el avatar se vea en partida.
-========================================================== */
-function drawAvatar(){
-  const avatar = selectedAvatar();
-  ctx.save();
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-  ctx.font="30px Arial";
-  ctx.fillText(avatar.visual,basket.x+basket.width/2,basket.y-24);
-  ctx.restore();
+function renderShopItems() {
+    const aGrid = document.getElementById("avatarsGrid");
+    const sGrid = document.getElementById("skinsGrid");
+    aGrid.innerHTML = ''; sGrid.innerHTML = '';
+    SHOP_ITEMS.avatars.forEach(i => aGrid.appendChild(createShopItemElement(i, 'avatar')));
+    SHOP_ITEMS.skins.forEach(i => sGrid.appendChild(createShopItemElement(i, 'skin')));
+    updatePlayerInfo();
+    updateShopBadge();
 }
 
-/* ==========================================================
-   13. DIBUJADO — MONEDA + SKIN
-========================================================== */
-function coinColor(){
-  if(fallingCoin.special === "lightning")return "#00e5ff";
-  if(fallingCoin.special === "diamond")return "#00ffff";
-  if(fallingCoin.special === "trap")return "#ff3333";
-  const skin=selectedCoinSkin();
-  return skin.color;
-}
-function coinSymbol(){
-  if(fallingCoin.special === "lightning")return "⚡";
-  if(fallingCoin.special === "diamond")return "💎";
-  if(fallingCoin.special === "trap")return "💣";
-  const skin=selectedCoinSkin();
-  return skin.id === "coin1" ? null : skin.visual;
-}
-function drawCoin(){
-  const color=coinColor();
-  const symbol=coinSymbol();
-  const skin=selectedCoinSkin();
+function createShopItemElement(item, type) {
+    const div = document.createElement('div');
+    div.className = 'shop-item';
+    if (gameState.purchasedItems[item.id]) div.classList.add('purchased');
+    if (gameState[`selected${type[0].toUpperCase()+type.slice(1)}`] === item.id) div.classList.add('equipped');
 
-  ctx.save();
-  ctx.translate(fallingCoin.x,fallingCoin.y);
-  ctx.rotate(fallingCoin.rotation);
-  ctx.shadowColor=color;
-  ctx.shadowBlur=fallingCoin.special === "normal" ? 7 : 22;
+    let badge = '';
+    if (item.new) badge = '<div class="badge-new">NUEVO</div>';
+    if (item.popular) badge = '<div class="badge-popular">⭐</div>';
 
-  ctx.beginPath();
-  ctx.arc(0,0,fallingCoin.radius,0,Math.PI*2);
-  ctx.fillStyle=color;
-  ctx.fill();
-  ctx.strokeStyle="#fff";
-  ctx.lineWidth=2;
-  ctx.stroke();
-
-  ctx.shadowBlur=0;
-  if(symbol){
-    ctx.font="18px Arial";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText(symbol,0,0);
-  }else{
-    ctx.beginPath();
-    ctx.arc(-fallingCoin.radius/3,-fallingCoin.radius/3,fallingCoin.radius/3,0,Math.PI*2);
-    ctx.fillStyle="rgba(255,255,255,.55)";
-    ctx.fill();
-  }
-  ctx.restore();
-
-  if(fallingCoin.special === "normal" && skin.id !== "coin1" && Math.random()<.25){
-    specialTrail.push({x:fallingCoin.x,y:fallingCoin.y,life:1});
-  }
-  specialTrail = specialTrail.filter(p=>p.life>0);
-  specialTrail.forEach(p=>{
-    ctx.save();ctx.globalAlpha=p.life*.35;ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();ctx.restore();p.life-=.08;
-  });
-}
-
-/* ==========================================================
-   14. HUD
-========================================================== */
-function drawHUD(){
-  const fontSize=Math.max(18,window.innerWidth*.026);
-  ctx.fillStyle="rgba(0,0,0,.38)";
-  ctx.fillRect(0,0,canvas.width,112);
-
-  ctx.textAlign="left";
-  ctx.fillStyle="#ffd700";
-  ctx.font=`bold ${fontSize}px Arial`;
-  ctx.fillText(`💰 ${state.score}`,18,30);
-  ctx.fillStyle="#fff";
-  ctx.font=`${fontSize*.7}px Arial`;
-  ctx.fillText(`🔥 Combo x${state.combo}`,18,55);
-  ctx.fillText(`⭐ Nivel ${state.level}`,18,80);
-
-  ctx.textAlign="right";
-  ctx.fillStyle=state.timeLeft<=5?"#ff5c5c":"#ffd700";
-  ctx.font=`bold ${fontSize}px Arial`;
-  ctx.fillText(`⏱️ ${state.timeLeft}s`,canvas.width-18,30);
-  ctx.fillStyle="#ffd700";
-  ctx.font=`${fontSize*.7}px Arial`;
-  ctx.fillText(`🏆 ${state.highScore}`,canvas.width-18,55);
-
-  const width=220,height=14,x=canvas.width/2-width/2,y=88;
-  const progress=Math.min(state.xp/xpNeeded(),1);
-  ctx.fillStyle="#0009";ctx.fillRect(x,y,width,height);
-  ctx.fillStyle="#9b59b6";ctx.fillRect(x,y,width*progress,height);
-  ctx.strokeStyle="#fff";ctx.strokeRect(x,y,width,height);
-  ctx.textAlign="center";ctx.font="10px Arial";ctx.fillStyle="#fff";
-  ctx.fillText(`${state.xp}/${xpNeeded()} XP`,canvas.width/2,y+10);
-
-  if(fallingCoin.special!=="normal"){
-    const labels={lightning:"⚡ X3 PUNTOS",diamond:"💎 +50 PUNTOS",trap:"💣 ¡CUIDADO!"};
-    const colors={lightning:"#00e5ff",diamond:"#00ffff",trap:"#ff6666"};
-    ctx.fillStyle=colors[fallingCoin.special];ctx.font="bold 15px Arial";
-    ctx.fillText(labels[fallingCoin.special],canvas.width/2,132);
-  }
-}
-
-/* ==========================================================
-   15. COLISIÓN / PUNTOS
-========================================================== */
-function checkCollision(){
-  return fallingCoin.y+fallingCoin.radius > basket.y &&
-         fallingCoin.y-fallingCoin.radius < basket.y+basket.height &&
-         fallingCoin.x > basket.x &&
-         fallingCoin.x < basket.x+basket.width;
-}
-
-function catchCoin(){
-  const now=Date.now();
-  state.combo = now-state.lastCatchTime < CONFIG.comboWindow ? Math.min(state.combo+1,CONFIG.maxCombo) : 1;
-  state.lastCatchTime=now;
-
-  if(fallingCoin.special === "trap"){
-    state.combo=1;
-    state.score=Math.max(0,state.score-20);
-    createParticles(fallingCoin.x,fallingCoin.y,12,"💥");
-    showToast("💣 ¡TRAMPA! -20 puntos");
-    addSystemMessage("💣 ¡Alguien atrapó una moneda trampa!");
-    playSound("bad");
-    resetCoin();
-    saveState();
-    return;
-  }
-
-  let points=CONFIG.scorePerCoin*state.combo;
-  if(fallingCoin.special === "lightning")points*=3;
-  if(fallingCoin.special === "diamond")points+=50;
-
-  state.score+=points;
-  state.coins+=points;
-  addXP(Math.max(1,points));
-  fallingCoin.speed+=CONFIG.speedIncrement;
-
-  const particleEmoji=fallingCoin.special === "lightning" ? "⚡" : fallingCoin.special === "diamond" ? "💎" : selectedCoinSkin().trail;
-  createParticles(fallingCoin.x,fallingCoin.y,fallingCoin.special === "normal"?6:15,particleEmoji);
-
-  if(fallingCoin.special === "lightning")showToast(`⚡ ¡MONEDA RAYO! +${points}`);
-  if(fallingCoin.special === "diamond")showToast(`💎 ¡DIAMANTE! +${points}`);
-
-  playSound("catch");
-  resetCoin();
-  saveState();
-}
-
-function updateGame(){
-  if(!state.playing || state.paused)return;
-  fallingCoin.y+=fallingCoin.speed;
-  fallingCoin.rotation+=.12;
-  if(fallingCoin.y-fallingCoin.radius>canvas.height){resetCoin();state.combo=1;return}
-  if(checkCollision())catchCoin();
-}
-
-/* ==========================================================
-   16. EVENTOS ALEATORIOS
-========================================================== */
-function startRandomEvents(){
-  clearInterval(eventHandle);
-  eventHandle=setInterval(()=>{
-    if(!state.playing||state.paused)return;
-    const roll=Math.random();
-    if(roll<.34){
-      state.coins+=100;createParticles(canvas.width/2,canvas.height/2,18,"💰");showToast("💰 ¡BONO +100 MONEDAS!");addSystemMessage("💰 Evento: bono de 100 monedas");playSound("event");
-    }else if(roll<.67){
-      state.combo=Math.min(CONFIG.maxCombo,state.combo+3);createParticles(canvas.width/2,canvas.height/2,15,"🔥");showToast("🔥 ¡SUPER COMBO!");addSystemMessage("🔥 Evento: super combo");playSound("event");
-    }else{
-      fallingCoin.speed+=2;createParticles(canvas.width/2,canvas.height/2,15,"⚡");showToast("⚡ ¡FIEBRE DE VELOCIDAD!");addSystemMessage("⚡ Evento: monedas más rápidas");playSound("event");
+    const purchased = gameState.purchasedItems[item.id];
+    const equipped = gameState[`selected${type[0].toUpperCase()+type.slice(1)}`] === item.id;
+    let btn = '';
+    if (purchased) {
+        btn = equipped ? '<button class="item-btn btn-equipped">✓ EQUIPADO</button>'
+                       : `<button class="item-btn btn-equip" onclick="equipItem('${item.id}','${type}')">Equipar</button>`;
+    } else {
+        const can = gameState.coins >= item.price;
+        btn = `<button class="item-btn btn-buy" onclick="buyItem('${item.id}','${type}',${item.price})" ${!can?'disabled':''}>${item.price}💰</button>`;
     }
-    saveState();
-  },7000);
+
+    const emoji = type === 'skin' ? item.name.split(' ')[0] : item.emoji;
+    div.innerHTML = `${badge}<span class="item-emoji">${emoji}</span>
+        <div class="item-name">${item.name}</div>
+        <div class="item-price">${item.price===0?'GRATIS':item.price+'💰'}</div>${btn}`;
+    return div;
 }
 
-/* ==========================================================
-   17. BUCLE PRINCIPAL
-========================================================== */
-function render(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawHUD();
-  drawBasketSkin();
-  drawAvatar();
-  drawCoin();
-  updateGame();
-  requestAnimationFrame(render);
+window.buyItem = function(id, type, price) {
+    if (gameState.coins >= price && !gameState.purchasedItems[id]) {
+        gameState.coins -= price;
+        gameState.purchasedItems[id] = true;
+        gameState[`selected${type[0].toUpperCase()+type.slice(1)}`] = id;
+        saveGameState();
+        renderShopItems();
+        addChatMessage("Sistema", `${chatState.username} compró un item! 🎉`, true);
+    }
+};
+
+window.equipItem = function(id, type) {
+    gameState[`selected${type[0].toUpperCase()+type.slice(1)}`] = id;
+    saveGameState();
+    renderShopItems();
+};
+
+function updatePlayerInfo() {
+    playerCoins.textContent = gameState.coins;
+    const av = SHOP_ITEMS.avatars.find(a => a.id === gameState.selectedAvatar);
+    if (av) playerAvatar.textContent = av.emoji;
+    const sk = SHOP_ITEMS.skins.find(s => s.id === gameState.selectedSkin);
+    if (sk) playerBasket.textContent = sk.name.split(' ')[0];
 }
 
-/* ==========================================================
-   18. PARTIDA
-========================================================== */
-function resetRun(){
-  state.score=0;
-  state.timeLeft=CONFIG.initialTime;
-  state.combo=1;
-  state.lastCatchTime=0;
-  fallingCoin.speed=CONFIG.initialSpeed;
-  resetCoin();
+shopBtn.addEventListener("click", () => shopModal.classList.add("active"));
+shopClose.addEventListener("click", () => shopModal.classList.remove("active"));
+shopModal.addEventListener("click", e => { if (e.target === shopModal) shopModal.classList.remove("active"); });
+
+function saveGameState() {
+    localStorage.setItem('gameState', JSON.stringify({
+        coins: gameState.coins,
+        selectedAvatar: gameState.selectedAvatar,
+        selectedSkin: gameState.selectedSkin,
+        purchasedItems: gameState.purchasedItems,
+        highScore: gameState.highScore,
+        soundEnabled: gameState.soundEnabled
+    }));
 }
 
-function startGame(){
-  if(state.playing)return;
-  resetRun();
-  state.playing=true;
-  state.paused=false;
-  startScreen.classList.add("hidden");
-  pauseOverlay.classList.remove("active");
-  pauseBtn.style.display="block";
-  pauseBtn.textContent="⏸";
-  clearInterval(timerHandle);
-  clearInterval(eventHandle);
-  timerHandle=setInterval(()=>{
-    if(!state.playing||state.paused)return;
-    if(state.timeLeft>0)state.timeLeft--;
-    else endGame();
-  },1000);
-  startRandomEvents();
-  addSystemMessage(`${player.name} empezó a jugar 🎮`);
-  playSound("start");
+function loadGameState() {
+    const s = localStorage.getItem('gameState');
+    if (s) {
+        const l = JSON.parse(s);
+        gameState.coins = l.coins ?? 1000;
+        gameState.selectedAvatar = l.selectedAvatar || 'avatar1';
+        gameState.selectedSkin = l.selectedSkin || 'skin1';
+        gameState.purchasedItems = l.purchasedItems || { avatar1: true, skin1: true };
+        gameState.highScore = l.highScore || 0;
+        gameState.soundEnabled = l.soundEnabled !== false;
+        soundBtn.textContent = gameState.soundEnabled ? "🔊" : "🔇";
+    }
+    document.getElementById("startHighScore").textContent = `🏆 Récord: ${gameState.highScore}`;
+}
+loadGameState();
+renderShopItems();
+
+// Chat
+const chatContainer = document.getElementById("chatContainer");
+const chatToggleBtn = document.getElementById("chatToggleBtn");
+const chatCloseBtn = document.getElementById("chatCloseBtn");
+const chatMessages = document.getElementById("chatMessages");
+const chatInput = document.getElementById("chatInput");
+const chatSendBtn = document.getElementById("chatSendBtn");
+
+function addChatMessage(user, text, isSystem=false, isOwner=false) {
+    const div = document.createElement("div");
+    div.className = isSystem ? "chat-message chat-system" : "chat-message";
+    const t = new Date();
+    const time = `${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+    if (isSystem) {
+        div.innerHTML = `<div class="chat-message-header"><div class="chat-message-username">🔔 SISTEMA</div><div class="chat-message-time">${time}</div></div><div class="chat-message-text">${text}</div>`;
+    } else {
+        const badge = isOwner ? '<span class="chat-message-badge">👑</span>' : '';
+        div.innerHTML = `<div class="chat-message-header"><div class="chat-message-username">${user} ${badge}</div><div class="chat-message-time">${time}</div></div><div class="chat-message-text">${text.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}</div>`;
+    }
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (chatMessages.children.length > 40) chatMessages.removeChild(chatMessages.firstChild);
+    if (!chatState.isOpen && !isSystem) {
+        chatState.unreadMessages++;
+        let n = chatToggleBtn.querySelector(".chat-notification");
+        if (!n) { n = document.createElement("div"); n.className="chat-notification"; chatToggleBtn.appendChild(n); }
+        n.textContent = chatState.unreadMessages;
+    }
 }
 
-function endGame(){
-  state.playing=false;
-  state.paused=false;
-  pauseOverlay.classList.remove("active");
-  pauseBtn.style.display="none";
-  clearInterval(timerHandle);clearInterval(eventHandle);
+function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text || text.length > 100) return;
+    addChatMessage(chatState.username, text, false, true);
+    chatInput.value = "";
+    if (Math.random() > 0.6) {
+        const r = ["¡Buen combo!", "¡Sigue así!", "¡A por el récord!", "¡Vamos!", "¡Increíble!", "¡Loco el combo!"];
+        setTimeout(() => addChatMessage(`Jugador${Math.floor(Math.random()*900)}`, r[Math.floor(Math.random()*r.length)]), 700);
+    }
+}
+chatSendBtn.addEventListener("click", sendChatMessage);
+chatInput.addEventListener("keypress", e => { if (e.key==="Enter") sendChatMessage(); });
+chatToggleBtn.addEventListener("click", () => {
+    chatState.isOpen = !chatState.isOpen;
+    chatContainer.classList.toggle("hidden");
+    chatToggleBtn.classList.toggle("hidden");
+    if (chatState.isOpen) { chatState.unreadMessages=0; const n=chatToggleBtn.querySelector(".chat-notification"); if(n)n.remove(); chatInput.focus(); }
+});
+chatCloseBtn.addEventListener("click", () => {
+    chatState.isOpen = false;
+    chatContainer.classList.add("hidden");
+    chatToggleBtn.classList.remove("hidden");
+});
+addChatMessage("Sistema", `¡Bienvenido ${chatState.username}! 👑`, true);
 
-  if(state.score>state.highScore){
-    state.highScore=state.score;
-    document.getElementById("startHighScore").textContent=`🏆 Récord: ${state.highScore}`;
-    showToast("🏆 ¡NUEVO RÉCORD!");
-  }
-  saveState();
-  startScreen.classList.remove("hidden");
-  addSystemMessage(`${player.name} terminó con ${state.score} puntos 🎯`);
-  playSound("bad");
+// Admin
+document.getElementById("adminBtn").addEventListener("click", () => document.getElementById("adminPanel").classList.toggle("active"));
+["initialTime","initialSpeed","speedIncrement","scorePerCoin","basketWidth","coinRadius"].forEach(id => {
+    document.getElementById(id).addEventListener("input", e => {
+        document.getElementById(id+"Value").textContent = "Actual: " + e.target.value;
+    });
+});
+document.getElementById("applyBtn").addEventListener("click", () => {
+    CONFIG.INITIAL_TIME = +document.getElementById("initialTime").value;
+    CONFIG.INITIAL_COIN_SPEED = +document.getElementById("initialSpeed").value;
+    CONFIG.SPEED_INCREMENT = +document.getElementById("speedIncrement").value;
+    CONFIG.SCORE_PER_COIN = +document.getElementById("scorePerCoin").value;
+    CONFIG.BASKET_WIDTH = +document.getElementById("basketWidth").value;
+    CONFIG.COIN_RADIUS = +document.getElementById("coinRadius").value;
+    basket.width = CONFIG.BASKET_WIDTH;
+    coin.radius = CONFIG.COIN_RADIUS;
+    document.getElementById("applyBtn").textContent = "✅ OK";
+    setTimeout(() => document.getElementById("applyBtn").textContent = "✅ Aplicar", 1200);
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+    document.getElementById("initialTime").value=30;
+    document.getElementById("initialSpeed").value=4;
+    document.getElementById("speedIncrement").value=0.2;
+    document.getElementById("scorePerCoin").value=10;
+    document.getElementById("basketWidth").value=80;
+    document.getElementById("coinRadius").value=15;
+});
+document.getElementById("clearBtn").addEventListener("click", () => {
+    if (confirm("¿Resetear todo?")) {
+        document.getElementById("resetBtn").click();
+        resetGameState(); resetCoin();
+        gameState.isPlaying=false; gameState.isPaused=false;
+        clearInterval(gameState.gameInterval); clearInterval(gameState.timerInterval);
+        pauseOverlay.classList.remove("active");
+    }
+});
+
+setInterval(() => {
+    document.getElementById("gameStatus").textContent = `Estado: ${gameState.isPlaying ? (gameState.isPaused?"⏸ Pausado":"🔴 Jugando") : "🟢 Parado"}`;
+    document.getElementById("gameScore").textContent = `Puntos: ${gameState.score}`;
+    document.getElementById("gameTime").textContent = `Tiempo: ${gameState.timeLeft}s`;
+    document.getElementById("gameCombo").textContent = `Combo: x${gameState.combo}`;
+    playerCoins.textContent = gameState.coins;
+}, 120);
+
+function resetCoin() {
+    coin.y = -CONFIG.COIN_RADIUS*2;
+    coin.x = Math.random()*(canvas.width - coin.radius*2) + coin.radius;
+    coin.rotation = 0;
+}
+function resetGameState() {
+    gameState.score=0; gameState.timeLeft=CONFIG.INITIAL_TIME;
+    gameState.combo=1; gameState.lastCatchTime=0;
+    coin.speed = CONFIG.INITIAL_COIN_SPEED;
+}
+function createParticles(x,y,n=6) {
+    for(let i=0;i<n;i++){
+        const p=document.createElement("div");
+        p.className="particle";
+        p.textContent=["💰","✨","⭐","🪙"][Math.floor(Math.random()*4)];
+        p.style.left=(x+(Math.random()-0.5)*50)+"px";
+        p.style.top=y+"px";
+        gameContainer.appendChild(p);
+        setTimeout(()=>p.remove(),1000);
+    }
 }
 
-function togglePause(){
-  if(!state.playing)return;
-  state.paused=!state.paused;
-  pauseOverlay.classList.toggle("active",state.paused);
-  pauseBtn.textContent=state.paused?"▶":"⏸";
+function drawBasket() {
+    basket.x += (basket.targetX - basket.x)*0.22;
+    const skin = SHOP_ITEMS.skins.find(s => s.id === gameState.selectedSkin);
+    if (skin && skin.draw) skin.draw(ctx, basket.x, basket.y, basket.width, basket.height);
+    else { ctx.fillStyle="#8B4513"; ctx.fillRect(basket.x,basket.y,basket.width,basket.height); }
 }
 
-/* ==========================================================
-   19. CONTROLES
-========================================================== */
-function moveBasketTo(clientX){
-  if(!state.playing||state.paused)return;
-  const rect=canvas.getBoundingClientRect();
-  basket.targetX=clamp(clientX-rect.left-basket.width/2,0,canvas.width-basket.width);
+function drawCoin() {
+    ctx.save();
+    ctx.translate(coin.x, coin.y);
+    ctx.rotate(coin.rotation);
+    ctx.beginPath(); ctx.arc(0,0,coin.radius,0,Math.PI*2);
+    ctx.fillStyle=coin.color; ctx.fill();
+    ctx.strokeStyle="#DAA520"; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(-coin.radius/3,-coin.radius/3,coin.radius/3,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.55)"; ctx.fill();
+    ctx.restore();
 }
-canvas.addEventListener("mousemove",e=>moveBasketTo(e.clientX));
-canvas.addEventListener("touchmove",e=>{e.preventDefault();moveBasketTo(e.touches[0].clientX)},{passive:false});
 
-window.addEventListener("keydown",e=>{
-  keys[e.key.toLowerCase()]=true;
-  if(e.code==="Space"){
+function drawHUD() {
+    const fs = Math.max(17, window.innerWidth*0.026);
+    ctx.fillStyle="rgba(0,0,0,0.35)"; ctx.fillRect(0,0,canvas.width,68);
+    ctx.fillStyle="#FFD700"; ctx.font=`bold ${fs}px Arial`; ctx.textAlign="left";
+    ctx.fillText(`💰 ${gameState.score}`, 18, 32);
+    ctx.fillStyle="#87CEEB"; ctx.font=`${fs*0.72}px Arial`;
+    ctx.fillText(`Combo x${gameState.combo}`, 18, 55);
+    ctx.textAlign="right";
+    ctx.fillStyle = gameState.timeLeft<=5 ? "#FF6B6B" : "#FFD700";
+    ctx.font=`bold ${fs}px Arial`;
+    ctx.fillText(`⏱️ ${gameState.timeLeft}s`, canvas.width-18, 32);
+    ctx.fillStyle="#FFD700"; ctx.font=`${fs*0.7}px Arial`;
+    ctx.fillText(`🏆 ${gameState.highScore}`, canvas.width-18, 55);
+}
+
+function drawGameOver() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="rgba(0,0,0,0.75)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#FFF"; ctx.font=`bold ${Math.max(34,window.innerWidth*0.065)}px Arial`; ctx.textAlign="center";
+    ctx.fillText("¡TIEMPO!", canvas.width/2, canvas.height/3.4);
+    ctx.fillStyle="#FFD700"; ctx.font=`bold ${Math.max(26,window.innerWidth*0.048)}px Arial`;
+    ctx.fillText(`Puntuación: ${gameState.score}`, canvas.width/2, canvas.height/2.15);
+    if (gameState.score >= gameState.highScore && gameState.score > 0) {
+        ctx.fillStyle="#4caf50"; ctx.font=`${Math.max(17,window.innerWidth*0.032)}px Arial`;
+        ctx.fillText("🎉 ¡NUEVO RÉCORD!", canvas.width/2, canvas.height/1.82);
+    } else {
+        ctx.fillStyle="#87CEEB"; ctx.font=`${Math.max(15,window.innerWidth*0.028)}px Arial`;
+        ctx.fillText(`Récord: ${gameState.highScore}`, canvas.width/2, canvas.height/1.82);
+    }
+    ctx.fillStyle="#ccc"; ctx.font=`${Math.max(15,window.innerWidth*0.028)}px Arial`;
+    ctx.fillText("Clic o Espacio para jugar de nuevo", canvas.width/2, canvas.height-85);
+}
+
+function checkCollision() {
+    return coin.y+coin.radius > basket.y &&
+           coin.y-coin.radius < basket.y+basket.height &&
+           coin.x > basket.x && coin.x < basket.x+basket.width;
+}
+
+function update() {
+    if (!gameState.isPlaying || gameState.isPaused) return;
+    coin.y += coin.speed;
+    coin.rotation += 0.12;
+    if (coin.y - coin.radius > canvas.height) {
+        resetCoin();
+        gameState.combo = 1;
+    }
+    if (checkCollision()) {
+        const now = Date.now();
+        if (now - gameState.lastCatchTime < 1800) gameState.combo = Math.min(gameState.combo+1, 12);
+        else gameState.combo = 1;
+        gameState.lastCatchTime = now;
+        const pts = CONFIG.SCORE_PER_COIN * gameState.combo;
+        gameState.score += pts;
+        gameState.coins += pts;
+        coin.speed += CONFIG.SPEED_INCREMENT;
+        createParticles(coin.x, coin.y, 5 + Math.floor(gameState.combo/2));
+        playSound('catch');
+        resetCoin();
+    }
+}
+
+function gameLoop() {
+    if (gameState.isPaused) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawHUD(); drawBasket(); drawCoin(); update();
+}
+
+function handleMouseMove(e) {
+    if (!gameState.isPlaying || gameState.isPaused) return;
+    const r = canvas.getBoundingClientRect();
+    basket.targetX = e.clientX - r.left - basket.width/2;
+    basket.targetX = Math.max(0, Math.min(basket.targetX, canvas.width-basket.width));
+}
+function handleTouchMove(e) {
+    if (!gameState.isPlaying || gameState.isPaused) return;
     e.preventDefault();
-    if(!state.playing)startGame();else togglePause();
-  }else if(e.key.toLowerCase()==="p")togglePause();
+    const r = canvas.getBoundingClientRect();
+    basket.targetX = e.touches[0].clientX - r.left - basket.width/2;
+    basket.targetX = Math.max(0, Math.min(basket.targetX, canvas.width-basket.width));
+}
+
+const keys = {};
+window.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.code==="Space" || e.key==="p" || e.key==="P") {
+        e.preventDefault();
+        if (!gameState.isPlaying) startGame();
+        else togglePause();
+    }
 });
-window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false});
-setInterval(()=>{
-  if(!state.playing||state.paused)return;
-  const speed=14;
-  if(keys["arrowleft"]||keys["a"])basket.targetX-=speed;
-  if(keys["arrowright"]||keys["d"])basket.targetX+=speed;
-  basket.targetX=clamp(basket.targetX,0,canvas.width-basket.width);
-  basket.x += (basket.targetX-basket.x)*.22;
-},16);
+window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-canvas.addEventListener("click",()=>{if(!state.playing)startGame()});
-startScreen.addEventListener("click",()=>{if(!state.playing)startGame()});
-
-/* ==========================================================
-   20. TIENDA
-========================================================== */
-const shopModal=document.getElementById("shopModal");
-const shopBadge=document.getElementById("shopBadge");
-
-function getShopGroups(){return [SHOP.avatars,SHOP.baskets,SHOP.coins]}
-
-function updateShopHeader(){
-  document.getElementById("playerCoins").textContent=state.coins;
-  document.getElementById("playerLevel").textContent=state.level;
-  document.getElementById("playerAvatar").textContent=selectedAvatar().visual;
-  document.getElementById("playerBasket").textContent=selectedBasketSkin().visual;
-
-  const totalPurchasable=getShopGroups().flat().filter(item=>item.price>0).length;
-  const purchased=getShopGroups().flat().filter(item=>item.price>0&&state.owned[item.id]).length;
-  const missing=totalPurchasable-purchased;
-  shopBadge.textContent=missing;
-  shopBadge.style.display=missing?"flex":"none";
+function handleKeyboard() {
+    if (!gameState.isPlaying || gameState.isPaused) return;
+    if (keys["arrowleft"] || keys["a"]) basket.targetX -= 14;
+    if (keys["arrowright"] || keys["d"]) basket.targetX += 14;
+    basket.targetX = Math.max(0, Math.min(basket.targetX, canvas.width-basket.width));
 }
 
-function makeShopCard(item,type){
-  const wrapper=document.createElement("div");
-  wrapper.className="shop-item";
-
-  const isOwned=Boolean(state.owned[item.id]);
-  const selectedKey=type==="avatar"?"selectedAvatar":type==="basket"?"selectedBasket":"selectedCoinSkin";
-  const isEquipped=state[selectedKey]===item.id;
-
-  if(isEquipped)wrapper.classList.add("equipped");
-
-  if(item.price>0 && !isOwned){
-    const badge=document.createElement("div");
-    badge.className="item-badge";
-    badge.textContent=item.price>=400?"⭐ PREMIUM":"NUEVO";
-    wrapper.appendChild(badge);
-  }
-
-  const visual=document.createElement("div");
-  visual.className="item-visual";
-  visual.textContent=item.visual;
-  wrapper.appendChild(visual);
-
-  const name=document.createElement("div");name.className="item-name";name.textContent=item.name;wrapper.appendChild(name);
-  const price=document.createElement("div");price.className="item-price";price.textContent=item.price===0?"GRATIS":`${item.price} 💰`;wrapper.appendChild(price);
-  const desc=document.createElement("div");desc.className="item-description";desc.textContent=item.description;wrapper.appendChild(desc);
-
-  const button=document.createElement("button");button.className="item-btn";
-  if(!isOwned){
-    button.classList.add("buy-btn");
-    button.textContent=`Comprar ${item.price} 💰`;
-    button.disabled=state.coins<item.price;
-    button.addEventListener("click",()=>buyItem(item,type));
-  }else if(isEquipped){
-    button.classList.add("equipped-btn");
-    button.textContent="✓ EQUIPADO";
-    button.disabled=true;
-  }else{
-    button.classList.add("equip-btn");
-    button.textContent="Equipar";
-    button.addEventListener("click",()=>equipItem(item,type));
-  }
-  wrapper.appendChild(button);
-  return wrapper;
+function startTimer() {
+    gameState.timerInterval = setInterval(() => {
+        if (gameState.isPaused) return;
+        if (gameState.timeLeft > 0) gameState.timeLeft--;
+        else endGame();
+    }, 1000);
 }
 
-function renderShop(){
-  const groups=[
-    [document.getElementById("avatarsGrid"),SHOP.avatars,"avatar"],
-    [document.getElementById("skinsGrid"),SHOP.baskets,"basket"],
-    [document.getElementById("coinSkinsGrid"),SHOP.coins,"coin"]
-  ];
-  groups.forEach(([container,items,type])=>{
-    container.innerHTML="";
-    items.forEach(item=>container.appendChild(makeShopCard(item,type)));
-  });
-  updateShopHeader();
+function endGame() {
+    gameState.isPlaying = false;
+    gameState.isPaused = false;
+    clearInterval(gameState.gameInterval);
+    clearInterval(gameState.timerInterval);
+    pauseOverlay.classList.remove("active");
+    pauseBtn.style.display = "none";
+    if (gameState.score > gameState.highScore) {
+        gameState.highScore = gameState.score;
+        document.getElementById("startHighScore").textContent = `🏆 Récord: ${gameState.highScore}`;
+    }
+    saveGameState();
+    playSound('gameover');
+    drawGameOver();
+    startScreen.classList.remove("hidden");
+    addChatMessage("Sistema", `${chatState.username} terminó con ${gameState.score} pts 🎯`, true);
 }
 
-function buyItem(item,type){
-  if(state.owned[item.id]||state.coins<item.price)return;
-  state.coins-=item.price;
-  state.owned[item.id]=true;
-  equipItem(item,type,false);
-  showToast(`🛍️ Compraste ${item.name}`);
-  addSystemMessage(`${player.name} compró ${item.name} 🎉`);
+function startGame() {
+    startScreen.classList.add("hidden");
+    resetGameState(); resetCoin();
+    gameState.isPlaying = true;
+    gameState.isPaused = false;
+    pauseBtn.style.display = "block";
+    pauseBtn.textContent = "⏸";
+    playSound('start');
+    gameLoop();
+    startTimer();
+    gameState.gameInterval = setInterval(() => { handleKeyboard(); gameLoop(); }, 1000/CONFIG.FPS);
+    addChatMessage("Sistema", `${chatState.username} empezó 🎮`, true);
 }
 
-function equipItem(item,type,notify=true){
-  if(type==="avatar")state.selectedAvatar=item.id;
-  else if(type==="basket")state.selectedBasket=item.id;
-  else state.selectedCoinSkin=item.id;
-  saveState();
-  renderShop();
-  if(notify)showToast(`✅ Equipado: ${item.name}`);
-}
-
-document.getElementById("shopBtn").addEventListener("click",()=>{renderShop();shopModal.classList.add("active")});
-document.getElementById("shopClose").addEventListener("click",()=>shopModal.classList.remove("active"));
-shopModal.addEventListener("click",e=>{if(e.target===shopModal)shopModal.classList.remove("active")});
-
-/* ==========================================================
-   21. CHAT
-========================================================== */
-const chatContainer=document.getElementById("chatContainer");
-const chatMessages=document.getElementById("chatMessages");
-const chatInput=document.getElementById("chatInput");
-let chatOpen=false;
-
-function addSystemMessage(text){
-  addChatMessage("SISTEMA",text,true);
-}
-function addChatMessage(username,text,isSystem=false){
-  const message=document.createElement("div");
-  message.className=`chat-message${isSystem?" system":""}`;
-  const time=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-  message.innerHTML=`<div class="chat-message-user">${isSystem?"🔔 SISTEMA":escapeHtml(username)} <span class="chat-message-time">${time}</span></div><div class="chat-message-text">${escapeHtml(text)}</div>`;
-  chatMessages.appendChild(message);
-  chatMessages.scrollTop=chatMessages.scrollHeight;
-  while(chatMessages.children.length>50)chatMessages.firstChild.remove();
-}
-function sendChat(){
-  const text=chatInput.value.trim();
-  if(!text)return;
-  addChatMessage(player.name,text,false);
-  chatInput.value="";
-}
-document.getElementById("chatToggleBtn").addEventListener("click",()=>{chatOpen=!chatOpen;chatContainer.classList.toggle("hidden",!chatOpen);if(chatOpen)chatInput.focus()});
-document.getElementById("chatCloseBtn").addEventListener("click",()=>{chatOpen=false;chatContainer.classList.add("hidden")});
-document.getElementById("chatSendBtn").addEventListener("click",sendChat);
-chatInput.addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
-
-/* ==========================================================
-   22. ADMIN
-========================================================== */
-const adminPanel=document.getElementById("adminPanel");
-document.getElementById("adminBtn").addEventListener("click",()=>adminPanel.classList.toggle("active"));
-
-document.getElementById("applyBtn").addEventListener("click",()=>{
-  CONFIG.initialTime=clamp(parseInt(document.getElementById("initialTime").value,10)||30,5,120);
-  CONFIG.initialSpeed=clamp(parseFloat(document.getElementById("initialSpeed").value)||4,1,20);
-  CONFIG.speedIncrement=Math.max(0,parseFloat(document.getElementById("speedIncrement").value)||.2);
-  CONFIG.scorePerCoin=clamp(parseInt(document.getElementById("scorePerCoin").value,10)||10,1,100);
-  CONFIG.basketWidth=clamp(parseInt(document.getElementById("basketWidth").value,10)||80,40,180);
-  basket.width=CONFIG.basketWidth;
-  basket.targetX=clamp(basket.targetX,0,canvas.width-basket.width);
-  showToast("✅ Configuración aplicada");
-});
-
-document.getElementById("resetBtn").addEventListener("click",()=>{
-  document.getElementById("initialTime").value=30;
-  document.getElementById("initialSpeed").value=4;
-  document.getElementById("speedIncrement").value=.2;
-  document.getElementById("scorePerCoin").value=10;
-  document.getElementById("basketWidth").value=80;
-});
-
-document.getElementById("clearBtn").addEventListener("click",()=>{
-  if(confirm("⚠️ ¿Borrar todo el progreso guardado?")){
-    localStorage.removeItem("atrapaMonedaSave");
-    location.reload();
-  }
-});
-
-setInterval(()=>{
-  const status=state.playing?(state.paused?"⏸ Pausado":"🔴 En juego"):"🟢 Parado";
-  document.getElementById("adminStatus").innerHTML=`Estado: ${status}<br>Puntos: ${state.score}<br>Tiempo: ${state.timeLeft}s<br>Combo: x${state.combo}<br>Nivel: ${state.level}`;
-  document.getElementById("playerCoins").textContent=state.coins;
-},100);
-
-/* ==========================================================
-   23. BOTONES GLOBALES
-========================================================== */
-soundBtn.addEventListener("click",()=>{state.sound=!state.sound;soundBtn.textContent=state.sound?"🔊":"🔇";saveState()});
-pauseBtn.addEventListener("click",togglePause);
-document.getElementById("fullscreenBtn").addEventListener("click",async()=>{
-  try{
-    if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
-    else await document.exitFullscreen();
-  }catch(error){showToast("⚠️ Pantalla completa no disponible")}
-});
-
-/* ==========================================================
-   24. INICIO
-========================================================== */
-loadState();
-renderShop();
-resetCoin();
-addSystemMessage(`¡Bienvenido ${player.name}! 👑 Eres el Owner.`);
-render();
+canvas.addEventListener("mousemove", handleMouseMove);
+canvas.addEventListener("touchmove", handleTouchMove, {passive:false});
+canvas.addEventListener("click", () => { if (!gameState.isPlaying) startGame(); });
+startScreen.addEventListener("click", startGame);
+startScreen.classList.remove("hidden");
 </script>
 </body>
 </html>
