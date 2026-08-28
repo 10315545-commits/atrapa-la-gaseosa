@@ -120,6 +120,12 @@ button{cursor:pointer}
  .chat-container{left:10px;bottom:10px;width:calc(100vw - 20px);height:55vh}
  .admin-panel{right:10px;bottom:65px;width:calc(100vw - 20px)}
 }
+.oldPauseHidden{display:none!important}
+.inGamePause{position:fixed;top:50%;right:18px;transform:translateY(-50%);z-index:25;padding:12px 16px;border:0;border-radius:12px;background:rgba(33,150,243,.9);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 4px 15px #0006;display:none}.inGamePause.show{display:block}.inGamePause:hover{transform:translateY(-50%) scale(1.05)}
+
+.rainbow-owner-name{font-weight:900;background:linear-gradient(90deg,#ff0000,#ff8a00,#ffee00,#22ff00,#00e5ff,#1877ff,#8a2be2,#ff00aa,#ff0000);background-size:400% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:ownerRainbow 2.2s linear infinite}
+.owner-badge{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:4px;background:linear-gradient(135deg,#ffd700,#ff9800);color:#111;font-size:9px;font-weight:900;box-shadow:0 0 8px rgba(255,215,0,.55)}
+@keyframes ownerRainbow{to{background-position:400% 0}}
 </style>
 </head>
 <body>
@@ -138,7 +144,8 @@ button{cursor:pointer}
 
 <button id="shopBtn" class="floating-btn" title="Tienda">🛍️<span id="shopBadge" class="badge">0</span></button>
 <button id="soundBtn" class="floating-btn" title="Sonido">🔊</button>
-<button id="pauseBtn" class="floating-btn" title="Pausa">⏸</button>
+<button id="pauseBtn" class="floating-btn oldPauseHidden" title="Pausa">⏸</button>
+<button id="inGamePause" class="inGamePause" title="Pausa">⏸ PAUSA</button>
 <button id="fullscreenBtn" class="floating-btn" title="Pantalla completa">⛶</button>
 <button id="chatToggleBtn" class="floating-btn" title="Chat">💬</button>
 <button id="adminBtn" class="floating-btn" title="Admin">⚙️</button>
@@ -188,6 +195,7 @@ button{cursor:pointer}
   <div id="adminStatus" class="admin-status">Estado: 🟢 Parado<br>Puntos: 0<br>Tiempo: 30s<br>Combo: x1</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
 
@@ -199,12 +207,27 @@ const ctx = canvas.getContext("2d");
 const startScreen = document.getElementById("startScreen");
 const pauseOverlay = document.getElementById("pauseOverlay");
 const pauseBtn = document.getElementById("pauseBtn");
+const inGamePause = document.getElementById("inGamePause");
 const soundBtn = document.getElementById("soundBtn");
 const toastEl = document.getElementById("toast");
 
 /* ==========================================================
    2. CONFIGURACIÓN
 ========================================================== */
+// ==========================================================
+// ☁️ MODO ONLINE (SUPABASE)
+// Pon aquí la URL y la Publishable Key de tu proyecto Supabase.
+// No uses la service_role key en este archivo.
+// ==========================================================
+const ONLINE_CONFIG = {
+  url: "PEGA_AQUI_TU_SUPABASE_URL",
+  key: "PEGA_AQUI_TU_SUPABASE_PUBLISHABLE_KEY",
+  enabled: true // se activa automáticamente cuando pongas URL + Publishable Key
+};
+let supabaseClient = null;
+let onlineSession = null;
+let onlinePlayerData = null;
+
 const CONFIG = {
   initialTime: 30,
   initialSpeed: 4,
@@ -278,10 +301,115 @@ const state = {
   owned: {avatar1:true,basket1:true,coin1:true}
 };
 
+const PLAYER_NUMBER_KEY = "atmPermanentPlayerNumber";
+function getPermanentPlayerNumber(){
+  let number = localStorage.getItem(PLAYER_NUMBER_KEY);
+  if(!number){
+    number = String(Math.floor(100 + Math.random()*900));
+    localStorage.setItem(PLAYER_NUMBER_KEY, number);
+  }
+  return number;
+}
 const player = {
-  name: `Jugador${Math.floor(Math.random()*1000)}`,
+  number: getPermanentPlayerNumber(),
+  name: `Jugador${getPermanentPlayerNumber()}`,
   owner: true
 };
+
+function onlineConfigured(){
+  return ONLINE_CONFIG.enabled &&
+    ONLINE_CONFIG.url.startsWith("http") &&
+    ONLINE_CONFIG.key.length > 20;
+}
+
+async function initOnlineMode(){
+  if(!onlineConfigured() || typeof window.supabase === "undefined") return false;
+  try{
+    supabaseClient = window.supabase.createClient(ONLINE_CONFIG.url, ONLINE_CONFIG.key);
+    const {data,error} = await supabaseClient.auth.getSession();
+    if(error) throw error;
+    onlineSession = data.session;
+    if(!onlineSession){
+      const auth = await supabaseClient.auth.signInAnonymously();
+      if(auth.error) throw auth.error;
+      onlineSession = auth.data.session;
+    }
+    if(!onlineSession) throw new Error("No se pudo crear la sesión online");
+    await syncOnlinePlayer(onlineSession.user.id);
+    subscribeOnlineEvents();
+    return true;
+  }catch(error){
+    console.warn("Supabase:", error);
+    addSystemMessage("⚠️ No se pudo conectar al servidor. El juego seguirá en modo local.");
+    return false;
+  }
+}
+
+async function syncOnlinePlayer(userId){
+  if(!supabaseClient) return;
+  let {data,error}=await supabaseClient
+    .from("players").select("id,player_number,display_name,coins,is_owner,avatar,basket_skin,coin_skin")
+    .eq("id",userId).maybeSingle();
+  if(error) throw error;
+  if(!data){
+    const created=await supabaseClient.rpc("create_player",{p_display_name:player.name});
+    if(created.error) throw created.error;
+    data=created.data;
+  }
+  if(Array.isArray(data)) data=data[0];
+  onlinePlayerData=data;
+  player.number=String(data.player_number);
+  player.name=data.display_name || `Jugador${player.number}`;
+  player.owner=!!data.is_owner;
+  state.coins=Number(data.coins ?? state.coins);
+  if(data.avatar) state.selectedAvatar=data.avatar;
+  if(data.basket_skin) state.selectedBasket=data.basket_skin;
+  if(data.coin_skin) state.selectedCoinSkin=data.coin_skin;
+  addSystemMessage(`☁️ Conectado como ${player.name} #${player.number}${player.owner?" 👑 OWNER":""}.`);
+  renderShop();
+}
+
+async function syncRemoteProfile(){
+  if(!supabaseClient || !onlineSession) return;
+  const payload={
+    display_name:player.name, coins:Math.floor(state.coins),
+    avatar:state.selectedAvatar,basket_skin:state.selectedBasket,coin_skin:state.selectedCoinSkin
+  };
+  const {error}=await supabaseClient.from("players").update(payload).eq("id",onlineSession.user.id);
+  if(error) console.warn("No se pudo guardar en servidor:",error.message);
+}
+
+function subscribeOnlineEvents(){
+  if(!supabaseClient || !onlineSession) return;
+  supabaseClient.channel("atm-global-events")
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"global_events"},payload=>{
+      const ev=payload.new;
+      if(ev.actor_id===onlineSession.user.id) return;
+      if(ev.type==="give") addSystemMessage(`🎁 ${ev.actor_name} regaló ${Number(ev.amount).toLocaleString()} monedas a #${ev.target_number}.`);
+      else if(ev.type==="giveall") addSystemMessage(`🎁 EVENTO GLOBAL: ${ev.actor_name} dio ${Number(ev.amount).toLocaleString()} monedas a todos.`);
+      else if(ev.type==="announce") addSystemMessage(`📢 ${ev.message}`);
+      else if(ev.type==="giveitem") addSystemMessage(`🎁 ${ev.actor_name} entregó ${ev.item_id}.`);
+    }).subscribe();
+
+  // 💰 Sincroniza las monedas del jugador cuando el servidor las cambia.
+  supabaseClient.channel("atm-player-sync")
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:"players",filter:`id=eq.${onlineSession.user.id}`},payload=>{
+      const row=payload.new;
+      if(row && row.coins !== undefined){
+        state.coins=Number(row.coins);
+        updateShopHeader();
+      }
+      if(row && row.display_name) player.name=row.display_name;
+      if(row && row.is_owner !== undefined) player.owner=!!row.is_owner;
+    }).subscribe();
+}
+
+async function sendGlobalOwnerEvent(type, data){
+  if(!supabaseClient || !onlineSession || !player.owner) return false;
+  const {error}=await supabaseClient.rpc("owner_publish_event",{p_type:type,p_target_number:data.target_number??null,p_amount:data.amount??null,p_item_id:data.item_id??null,p_message:data.message??null});
+  if(error){addSystemMessage(`⚠️ ${error.message}`);return false;}
+  return true;
+}
 
 const basket = {
   x: 0,
@@ -699,8 +827,9 @@ function startGame(){
   state.paused=false;
   startScreen.classList.add("hidden");
   pauseOverlay.classList.remove("active");
-  pauseBtn.style.display="block";
-  pauseBtn.textContent="⏸";
+  pauseBtn.style.display="none";
+  inGamePause.classList.add("show");
+  inGamePause.textContent="⏸ PAUSA";
   clearInterval(timerHandle);
   clearInterval(eventHandle);
   timerHandle=setInterval(()=>{
@@ -718,6 +847,7 @@ function endGame(){
   state.paused=false;
   pauseOverlay.classList.remove("active");
   pauseBtn.style.display="none";
+  inGamePause.classList.remove("show");
   clearInterval(timerHandle);clearInterval(eventHandle);
 
   if(state.score>state.highScore){
@@ -736,6 +866,7 @@ function togglePause(){
   state.paused=!state.paused;
   pauseOverlay.classList.toggle("active",state.paused);
   pauseBtn.textContent=state.paused?"▶":"⏸";
+  inGamePause.textContent=state.paused?"▶ REANUDAR":"⏸ PAUSA";
 }
 
 /* ==========================================================
@@ -756,8 +887,8 @@ window.addEventListener("keydown",e=>{
   keys[e.key.toLowerCase()]=true;
   if(e.code==="Space"){
     e.preventDefault();
-    if(!state.playing)startGame();else togglePause();
-  }else if(e.key.toLowerCase()==="p")togglePause();
+    if(!state.playing)startGame();
+  }
 });
 window.addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false});
 setInterval(()=>{
@@ -931,7 +1062,9 @@ function addChatMessage(username,text,isSystem=false){
   const message=document.createElement("div");
   message.className=`chat-message${isSystem?" system":""}`;
   const time=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-  message.innerHTML=`<div class="chat-message-user">${isSystem?"🔔 SISTEMA":escapeHtml(username)} <span class="chat-message-time">${time}</span></div><div class="chat-message-text">${escapeHtml(text)}</div>`;
+  const isThisOwner = !isSystem && player.owner && username===player.name;
+  const displayName = isThisOwner ? `<span class="rainbow-owner-name">${escapeHtml(username)}</span><span class="owner-badge">👑 OWNER</span>` : escapeHtml(username);
+  message.innerHTML=`<div class="chat-message-user">${isSystem?"🔔 SISTEMA":displayName} <span class="chat-message-time">${time}</span></div><div class="chat-message-text">${escapeHtml(text)}</div>`;
   chatMessages.appendChild(message);
   chatMessages.scrollTop=chatMessages.scrollHeight;
   while(chatMessages.children.length>50)chatMessages.firstChild.remove();
@@ -939,7 +1072,7 @@ function addChatMessage(username,text,isSystem=false){
 function findShopItem(itemId){
   return [...SHOP.avatars,...SHOP.baskets,...SHOP.coins].find(item=>item.id===itemId);
 }
-function runOwnerCommand(text){
+async function runOwnerCommand(text){
   if(!player.owner) return false;
   const parts=text.trim().split(/\s+/);
   const command=(parts[0]||"").toLowerCase();
@@ -947,26 +1080,43 @@ function runOwnerCommand(text){
     addSystemMessage("👑 /money | /give cantidad | /give jugador cantidad | /giveall cantidad | /setcoins cantidad | /giveitem ID | /announce texto"); return true;
   }
   if(command==="/money"){
-    state.coins=999999999; saveState(); updateShopHeader(); showToast("💰 ¡999,999,999 MONEDAS!"); addSystemMessage(`👑 ${player.name} activó dinero ilimitado.`); return true;
+    if(onlineConfigured()&&supabaseClient&&onlineSession&&player.owner){
+      const r=await supabaseClient.rpc("owner_add_coins",{p_amount:999999999999});
+      if(r.error){addSystemMessage(`⚠️ ${r.error.message}`);return true;}
+      state.coins=Number(r.data.coins);
+    }else state.coins=999999999;
+    saveState(); updateShopHeader(); showToast("💰 ¡DINERO DEL OWNER!"); addSystemMessage(`👑 ${player.name} activó dinero ilimitado.`); return true;
   }
   if(command==="/give"){
     let target=player.name, amount=Number(parts[1]);
     if(parts.length>=3){target=parts[1];amount=Number(parts[2]);}
     if(!Number.isFinite(amount)||amount<=0){addSystemMessage("❌ Uso: /give 500 o /give Jugador500 500");return true;}
     amount=Math.floor(amount);
-    if(target===player.name){state.coins+=amount;saveState();updateShopHeader();addSystemMessage(`🎁 Regalo recibido: +${amount.toLocaleString()} monedas.`);showToast(`🎁 +${amount.toLocaleString()} monedas`);}
-    else {addSystemMessage(`👑 ${player.name} regaló ${amount.toLocaleString()} monedas a ${target}.`);showToast("🎁 Regalo enviado");}
+    if(target===player.name){state.coins+=amount;saveState();updateShopHeader();syncRemoteProfile();addSystemMessage(`🎁 Regalo recibido: +${amount.toLocaleString()} monedas.`);showToast(`🎁 +${amount.toLocaleString()} monedas`);}
+    else {
+      const targetNumber=Number(String(target).replace(/^Jugador/i,""));
+      if(onlineConfigured()&&supabaseClient&&onlineSession&&player.owner&&Number.isFinite(targetNumber)){
+        sendGlobalOwnerEvent("give",{target_number:targetNumber,amount});
+      } else addSystemMessage(`👑 ${player.name} regaló ${amount.toLocaleString()} monedas a ${target}.`);
+      showToast("🎁 Regalo enviado");}
     return true;
   }
   if(command==="/giveall"){
     const amount=Math.floor(Number(parts[1]));
     if(!Number.isFinite(amount)||amount<=0){addSystemMessage("❌ Uso: /giveall 1000");return true;}
-    state.coins+=amount;saveState();updateShopHeader();addSystemMessage(`🎁 EVENTO OWNER: todos reciben ${amount.toLocaleString()} monedas.`);return true;
+    state.coins+=amount;saveState();updateShopHeader();syncRemoteProfile();
+    if(onlineConfigured()&&supabaseClient&&onlineSession&&player.owner) sendGlobalOwnerEvent("giveall",{amount});
+    addSystemMessage(`🎁 EVENTO OWNER: todos reciben ${amount.toLocaleString()} monedas.`);return true;
   }
   if(command==="/setcoins"){
     const amount=Math.floor(Number(parts[1]));
     if(!Number.isFinite(amount)||amount<0){addSystemMessage("❌ Uso: /setcoins 999999");return true;}
-    state.coins=amount;saveState();updateShopHeader();addSystemMessage(`👑 Monedas del Owner establecidas en ${amount.toLocaleString()}.`);return true;
+    if(onlineConfigured()&&supabaseClient&&onlineSession&&player.owner){
+      const r=await supabaseClient.rpc("owner_set_coins",{p_amount:amount});
+      if(r.error){addSystemMessage(`⚠️ ${r.error.message}`);return true;}
+      state.coins=Number(r.data.coins);
+    }else state.coins=amount;
+    saveState();updateShopHeader();addSystemMessage(`👑 Monedas del Owner establecidas en ${amount.toLocaleString()}.`);return true;
   }
   if(command==="/giveitem"){
     const id=parts[1];const item=id?findShopItem(id):null;
@@ -976,6 +1126,7 @@ function runOwnerCommand(text){
   if(command==="/announce"){
     const message=parts.slice(1).join(" ").trim();
     if(!message){addSystemMessage("❌ Uso: /announce Hola jugadores");return true;}
+    if(onlineConfigured()&&supabaseClient&&onlineSession&&player.owner) sendGlobalOwnerEvent("announce",{message});
     addSystemMessage(`📢 ${message}`);return true;
   }
   return false;
@@ -984,7 +1135,7 @@ function sendChat(){
   const text=chatInput.value.trim();
   if(!text)return;
   if(text.startsWith("/")){
-    if(!runOwnerCommand(text)) addSystemMessage("❌ Comando desconocido. Usa /commands.");
+    runOwnerCommand(text).then(ok=>{if(!ok) addSystemMessage("❌ Comando desconocido. Usa /commands.");}).catch(error=>addSystemMessage(`⚠️ ${error.message||error}`));
   }else addChatMessage(player.name,text,false);
   chatInput.value="";
 }
@@ -1037,6 +1188,7 @@ setInterval(()=>{
 ========================================================== */
 soundBtn.addEventListener("click",()=>{state.sound=!state.sound;soundBtn.textContent=state.sound?"🔊":"🔇";saveState()});
 pauseBtn.addEventListener("click",togglePause);
+inGamePause.addEventListener("click",togglePause);
 document.getElementById("fullscreenBtn").addEventListener("click",async()=>{
   try{
     if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
@@ -1050,8 +1202,9 @@ document.getElementById("fullscreenBtn").addEventListener("click",async()=>{
 loadState();
 renderShop();
 resetCoin();
-addSystemMessage(`¡Bienvenido ${player.name}! 👑 Eres el Owner.`);
+addSystemMessage(`¡Bienvenido ${player.name}! ${player.owner?"👑 Eres el Owner.":"👤 Jugador."} Número: #${player.number}`);
 render();
+initOnlineMode();
 </script>
 </body>
 </html>
