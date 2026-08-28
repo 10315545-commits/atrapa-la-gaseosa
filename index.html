@@ -18,11 +18,11 @@ button{cursor:pointer}
    2. JUEGO
 ========================= */
 #gameContainer{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#87ceeb,#e8f9ff)}
-#gameCanvas{display:block;width:100%;height:100%;cursor:none}
+#gameCanvas{display:block;width:100%;height:100%;cursor:none;touch-action:none;position:relative;z-index:1}
 
 .start-screen,.pause-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
-.start-screen{z-index:40;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-.start-screen.hidden{display:none}
+.start-screen{z-index:40;pointer-events:auto;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.start-screen.hidden{display:none;pointer-events:none}
 .game-title{font-size:clamp(34px,7vw,70px);font-weight:900;text-shadow:0 4px 12px #0006}
 .game-coin{font-size:clamp(60px,10vw,110px);margin:15px;animation:coinSpin 2s linear infinite}
 .start-instruction{font-size:clamp(15px,3vw,22px);animation:pulse 1.5s infinite}
@@ -72,6 +72,8 @@ button{cursor:pointer}
 .equipped-btn{background:#4caf50}
 .item-btn:disabled{opacity:.45;cursor:not-allowed}
 .item-badge{position:absolute;top:5px;right:5px;padding:3px 6px;border-radius:4px;background:#d32f2f;color:#fff;font-size:9px;font-weight:900}
+.owner-badge{background:linear-gradient(135deg,#ffd700,#ff8c00)!important;color:#111!important}
+
 
 /* =========================
    5. CHAT
@@ -167,6 +169,7 @@ button{cursor:pointer}
   <div class="chat-header"><span>💬 Chat Global</span><button id="chatCloseBtn" class="chat-close">✕</button></div>
   <div id="chatMessages" class="chat-messages"></div>
   <div class="chat-input-area"><input id="chatInput" class="chat-input" maxlength="100" placeholder="Tu mensaje..."><button id="chatSendBtn" class="chat-send">➤</button></div>
+  <div id="ownerCommandHelp" style="display:none;padding:8px 12px;background:#211b08;border-top:1px solid #8b6b00;color:#ffeaa7;font-size:10px;line-height:1.5">👑 <b>OWNER:</b> /money · /give 500 · /give Jugador500 500 · /giveall 1000 · /setcoins 999999 · /giveitem ID · /announce texto · /commands</div>
 </div>
 
 <!-- ADMIN -->
@@ -220,6 +223,7 @@ const CONFIG = {
 ========================================================== */
 const SHOP = {
   avatars: [
+    {id:"ownerSkin",name:"OWNER LEGEND",visual:"👑🔥",price:999999,ownerOnly:true,description:"Skin exclusiva del dueño"},
     {id:"avatar1",name:"Clásico",visual:"👤",price:0,description:"El avatar original"},
     {id:"avatar2",name:"Frío",visual:"😎",price:150,description:"Estilo relajado"},
     {id:"avatar3",name:"Robot",visual:"🤖",price:200,description:"Modo robot"},
@@ -230,6 +234,7 @@ const SHOP = {
     {id:"avatar8",name:"Alien",visual:"👽",price:600,description:"Visitante"}
   ],
   baskets: [
+    {id:"ownerBasket",name:"OWNER CESTA",visual:"👑🧺",price:999999,ownerOnly:true,colors:["#ffd700","#8b6508"],description:"Cesta exclusiva del dueño"},
     {id:"basket1",name:"Clásica",visual:"🧺",price:0,colors:["#8b4513","#5c2d0c"],description:"Cesta original"},
     {id:"basket2",name:"Mágica",visual:"✨",price:120,colors:["#ff1493","#00bfff"],description:"Brilla al atrapar"},
     {id:"basket3",name:"Fuego",visual:"🔥",price:200,colors:["#ffd700","#ff4500"],description:"Muy caliente"},
@@ -241,6 +246,7 @@ const SHOP = {
     {id:"basket9",name:"Oro",visual:"🏆",price:500,colors:["#ffd700","#b8860b"],description:"La más valiosa"}
   ],
   coins: [
+    {id:"ownerCoin",name:"OWNER COIN",visual:"👑",price:999999,ownerOnly:true,color:"#ffd700",trail:"👑",description:"Moneda exclusiva del dueño"},
     {id:"coin1",name:"Dorada",visual:"🪙",price:0,color:"#ffd700",trail:"✨",description:"Moneda original"},
     {id:"coin2",name:"Esmeralda",visual:"🟢",price:180,color:"#39ff14",trail:"💚",description:"Verde brillante"},
     {id:"coin3",name:"Zafiro",visual:"🔵",price:220,color:"#00bfff",trail:"💧",description:"Azul veloz"},
@@ -455,9 +461,16 @@ function drawBasketSkin(){
     ctx.fillRect(x,y,width,height);
   }
 
-  if(skin.id === "basket7" || skin.id === "basket5"){
-    ctx.shadowColor = skin.id === "basket7" ? "#ff00ff" : "#00eaff";
-    ctx.shadowBlur = 16;
+  if(skin.id === "basket7" || skin.id === "basket5" || skin.id === "ownerBasket"){
+    ctx.shadowColor = skin.id === "basket7" ? "#ff00ff" : skin.id === "basket5" ? "#00eaff" : "#ffd700";
+    ctx.shadowBlur = skin.id === "ownerBasket" ? 24 : 16;
+  }
+  if(skin.id === "ownerBasket"){
+    ctx.fillStyle = "#fff";
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("👑", x+width/2, y+height/2);
   }
   ctx.strokeStyle="#fff";
   ctx.lineWidth=2;
@@ -506,7 +519,7 @@ function drawCoin(){
   ctx.translate(fallingCoin.x,fallingCoin.y);
   ctx.rotate(fallingCoin.rotation);
   ctx.shadowColor=color;
-  ctx.shadowBlur=fallingCoin.special === "normal" ? 7 : 22;
+  ctx.shadowBlur=state.selectedCoinSkin === "ownerCoin" ? 30 : fallingCoin.special === "normal" ? 7 : 22;
 
   ctx.beginPath();
   ctx.arc(0,0,fallingCoin.radius,0,Math.PI*2);
@@ -518,7 +531,7 @@ function drawCoin(){
 
   ctx.shadowBlur=0;
   if(symbol){
-    ctx.font="18px Arial";
+    ctx.font=skin.id === "ownerCoin" ? "20px Arial" : "18px Arial";
     ctx.textAlign="center";
     ctx.textBaseline="middle";
     ctx.fillText(symbol,0,0);
@@ -531,7 +544,7 @@ function drawCoin(){
   ctx.restore();
 
   if(fallingCoin.special === "normal" && skin.id !== "coin1" && Math.random()<.25){
-    specialTrail.push({x:fallingCoin.x,y:fallingCoin.y,life:1});
+    specialTrail.push({x:fallingCoin.x,y:fallingCoin.y,life:1,emoji:skin.trail||"✨"});
   }
   specialTrail = specialTrail.filter(p=>p.life>0);
   specialTrail.forEach(p=>{
@@ -734,6 +747,9 @@ function moveBasketTo(clientX){
   basket.targetX=clamp(clientX-rect.left-basket.width/2,0,canvas.width-basket.width);
 }
 canvas.addEventListener("mousemove",e=>moveBasketTo(e.clientX));
+canvas.addEventListener("pointermove",e=>{
+  if(e.pointerType!=="mouse") moveBasketTo(e.clientX);
+});
 canvas.addEventListener("touchmove",e=>{e.preventDefault();moveBasketTo(e.touches[0].clientX)},{passive:false});
 
 window.addEventListener("keydown",e=>{
@@ -753,8 +769,18 @@ setInterval(()=>{
   basket.x += (basket.targetX-basket.x)*.22;
 },16);
 
-canvas.addEventListener("click",()=>{if(!state.playing)startGame()});
-startScreen.addEventListener("click",()=>{if(!state.playing)startGame()});
+function tryStartGame(e){
+  if(e) e.preventDefault();
+  if(!state.playing) startGame();
+}
+canvas.addEventListener("click",tryStartGame);
+canvas.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="mouse") tryStartGame(e);
+});
+startScreen.addEventListener("click",tryStartGame);
+startScreen.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="mouse") tryStartGame(e);
+});
 
 /* ==========================================================
    20. TIENDA
@@ -778,16 +804,24 @@ function updateShopHeader(){
 }
 
 function makeShopCard(item,type){
+  // 🔒 Las skins privadas solo aparecen para el dueño.
+  if(item.ownerOnly && !player.owner) return document.createDocumentFragment();
+
   const wrapper=document.createElement("div");
   wrapper.className="shop-item";
 
+  const isOwnerFree = player.owner && type !== "";
   const isOwned=Boolean(state.owned[item.id]);
   const selectedKey=type==="avatar"?"selectedAvatar":type==="basket"?"selectedBasket":"selectedCoinSkin";
   const isEquipped=state[selectedKey]===item.id;
 
   if(isEquipped)wrapper.classList.add("equipped");
-
-  if(item.price>0 && !isOwned){
+  if(item.ownerOnly){
+    const badge=document.createElement("div");
+    badge.className="item-badge owner-badge";
+    badge.textContent="👑 SOLO OWNER";
+    wrapper.appendChild(badge);
+  }else if(item.price>0 && !isOwned && !isOwnerFree){
     const badge=document.createElement("div");
     badge.className="item-badge";
     badge.textContent=item.price>=400?"⭐ PREMIUM":"NUEVO";
@@ -800,14 +834,19 @@ function makeShopCard(item,type){
   wrapper.appendChild(visual);
 
   const name=document.createElement("div");name.className="item-name";name.textContent=item.name;wrapper.appendChild(name);
-  const price=document.createElement("div");price.className="item-price";price.textContent=item.price===0?"GRATIS":`${item.price} 💰`;wrapper.appendChild(price);
+
+  const price=document.createElement("div");
+  price.className="item-price";
+  price.textContent=isOwnerFree?"GRATIS 👑":(item.price===0?"GRATIS":`${item.price} 💰`);
+  wrapper.appendChild(price);
+
   const desc=document.createElement("div");desc.className="item-description";desc.textContent=item.description;wrapper.appendChild(desc);
 
   const button=document.createElement("button");button.className="item-btn";
   if(!isOwned){
     button.classList.add("buy-btn");
-    button.textContent=`Comprar ${item.price} 💰`;
-    button.disabled=state.coins<item.price;
+    button.textContent=isOwnerFree?"👑 RECLAMAR GRATIS":`Comprar ${item.price} 💰`;
+    button.disabled=!isOwnerFree && state.coins<item.price;
     button.addEventListener("click",()=>buyItem(item,type));
   }else if(isEquipped){
     button.classList.add("equipped-btn");
@@ -836,6 +875,20 @@ function renderShop(){
 }
 
 function buyItem(item,type){
+  // 👑 El dueño no paga nada en la tienda.
+  if(player.owner){
+    if(state.owned[item.id]){
+      equipItem(item,type);
+      return;
+    }
+    state.owned[item.id]=true;
+    equipItem(item,type,false);
+    showToast(`👑 ${item.name} desbloqueada GRATIS`);
+    addSystemMessage(`👑 ${player.name} desbloqueó ${item.name} gratis.`);
+    return;
+  }
+
+  // 👤 Jugadores normales pagan el precio.
   if(state.owned[item.id]||state.coins<item.price)return;
   state.coins-=item.price;
   state.owned[item.id]=true;
@@ -845,6 +898,11 @@ function buyItem(item,type){
 }
 
 function equipItem(item,type,notify=true){
+  // 🔒 Protección de la skin exclusiva.
+  if(item.ownerOnly && !player.owner){
+    showToast("🔒 Esta skin es exclusiva del OWNER");
+    return;
+  }
   if(type==="avatar")state.selectedAvatar=item.id;
   else if(type==="basket")state.selectedBasket=item.id;
   else state.selectedCoinSkin=item.id;
@@ -864,6 +922,7 @@ const chatContainer=document.getElementById("chatContainer");
 const chatMessages=document.getElementById("chatMessages");
 const chatInput=document.getElementById("chatInput");
 let chatOpen=false;
+const ownerCommandHelp=document.getElementById("ownerCommandHelp");
 
 function addSystemMessage(text){
   addChatMessage("SISTEMA",text,true);
@@ -877,16 +936,63 @@ function addChatMessage(username,text,isSystem=false){
   chatMessages.scrollTop=chatMessages.scrollHeight;
   while(chatMessages.children.length>50)chatMessages.firstChild.remove();
 }
+function findShopItem(itemId){
+  return [...SHOP.avatars,...SHOP.baskets,...SHOP.coins].find(item=>item.id===itemId);
+}
+function runOwnerCommand(text){
+  if(!player.owner) return false;
+  const parts=text.trim().split(/\s+/);
+  const command=(parts[0]||"").toLowerCase();
+  if(command==="/commands"){
+    addSystemMessage("👑 /money | /give cantidad | /give jugador cantidad | /giveall cantidad | /setcoins cantidad | /giveitem ID | /announce texto"); return true;
+  }
+  if(command==="/money"){
+    state.coins=999999999; saveState(); updateShopHeader(); showToast("💰 ¡999,999,999 MONEDAS!"); addSystemMessage(`👑 ${player.name} activó dinero ilimitado.`); return true;
+  }
+  if(command==="/give"){
+    let target=player.name, amount=Number(parts[1]);
+    if(parts.length>=3){target=parts[1];amount=Number(parts[2]);}
+    if(!Number.isFinite(amount)||amount<=0){addSystemMessage("❌ Uso: /give 500 o /give Jugador500 500");return true;}
+    amount=Math.floor(amount);
+    if(target===player.name){state.coins+=amount;saveState();updateShopHeader();addSystemMessage(`🎁 Regalo recibido: +${amount.toLocaleString()} monedas.`);showToast(`🎁 +${amount.toLocaleString()} monedas`);}
+    else {addSystemMessage(`👑 ${player.name} regaló ${amount.toLocaleString()} monedas a ${target}.`);showToast("🎁 Regalo enviado");}
+    return true;
+  }
+  if(command==="/giveall"){
+    const amount=Math.floor(Number(parts[1]));
+    if(!Number.isFinite(amount)||amount<=0){addSystemMessage("❌ Uso: /giveall 1000");return true;}
+    state.coins+=amount;saveState();updateShopHeader();addSystemMessage(`🎁 EVENTO OWNER: todos reciben ${amount.toLocaleString()} monedas.`);return true;
+  }
+  if(command==="/setcoins"){
+    const amount=Math.floor(Number(parts[1]));
+    if(!Number.isFinite(amount)||amount<0){addSystemMessage("❌ Uso: /setcoins 999999");return true;}
+    state.coins=amount;saveState();updateShopHeader();addSystemMessage(`👑 Monedas del Owner establecidas en ${amount.toLocaleString()}.`);return true;
+  }
+  if(command==="/giveitem"){
+    const id=parts[1];const item=id?findShopItem(id):null;
+    if(!item){addSystemMessage("❌ Item no encontrado. Usa /giveitem ID");return true;}
+    state.owned[item.id]=true;saveState();renderShop();addSystemMessage(`🎁 ${item.name} desbloqueada para el Owner.`);showToast(`✅ ${item.name}`);return true;
+  }
+  if(command==="/announce"){
+    const message=parts.slice(1).join(" ").trim();
+    if(!message){addSystemMessage("❌ Uso: /announce Hola jugadores");return true;}
+    addSystemMessage(`📢 ${message}`);return true;
+  }
+  return false;
+}
 function sendChat(){
   const text=chatInput.value.trim();
   if(!text)return;
-  addChatMessage(player.name,text,false);
+  if(text.startsWith("/")){
+    if(!runOwnerCommand(text)) addSystemMessage("❌ Comando desconocido. Usa /commands.");
+  }else addChatMessage(player.name,text,false);
   chatInput.value="";
 }
 document.getElementById("chatToggleBtn").addEventListener("click",()=>{chatOpen=!chatOpen;chatContainer.classList.toggle("hidden",!chatOpen);if(chatOpen)chatInput.focus()});
 document.getElementById("chatCloseBtn").addEventListener("click",()=>{chatOpen=false;chatContainer.classList.add("hidden")});
 document.getElementById("chatSendBtn").addEventListener("click",sendChat);
 chatInput.addEventListener("keydown",e=>{if(e.key==="Enter")sendChat()});
+ownerCommandHelp.style.display=player.owner?"block":"none";
 
 /* ==========================================================
    22. ADMIN
