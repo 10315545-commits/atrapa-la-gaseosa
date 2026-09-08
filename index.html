@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atrapa la Moneda — Chaos Edition 1.0</title>
+<title>Atrapa la Moneda — CHAOS MEGA UPDATE 2.0</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -853,6 +853,71 @@ button{cursor:pointer}
     left:10px
   }
 }
+
+/* ==========================================================
+   CHAOS MEGA UPDATE 3.0
+========================================================== */
+#megaBtn{
+  position:fixed;top:145px;right:20px;z-index:75;
+  border:2px solid #ffd700;border-radius:14px;padding:12px 16px;
+  background:linear-gradient(135deg,#ff1744,#7c4dff);
+  color:#fff;font-weight:900;font-size:14px;cursor:pointer;
+  box-shadow:0 10px 35px #0008;transition:.2s
+}
+#megaBtn:hover{transform:scale(1.05)}
+#megaModal{
+  position:fixed;inset:0;z-index:140;display:none;align-items:center;
+  justify-content:center;background:#000c;padding:14px
+}
+#megaModal.open{display:flex}
+#megaBox{
+  width:min(1000px,96vw);max-height:92vh;overflow:auto;
+  background:linear-gradient(145deg,#11131f,#1b1028);
+  border:2px solid #ffd700;border-radius:18px;padding:20px;
+  box-shadow:0 25px 80px #000
+}
+.megaHead{display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #ffffff22;padding-bottom:12px;margin-bottom:15px}
+.megaHead h2{color:#ffd700}
+.megaClose{background:#ffffff18;border:0;color:#fff;border-radius:8px;
+  padding:8px 12px;font-weight:900;cursor:pointer}
+.megaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.megaCard{background:#ffffff0d;border:1px solid #ffffff18;border-radius:12px;padding:14px}
+.megaCard h3{font-size:14px;color:#9bdfff;margin-bottom:8px}
+.megaValue{font-size:25px;color:#ffd700;font-weight:900}
+.megaSmall{font-size:11px;color:#aaa;line-height:1.5}
+.megaBar{height:9px;background:#0008;border-radius:10px;overflow:hidden;margin-top:8px}
+.megaBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff1744)}
+.megaActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.megaAction{border:0;border-radius:8px;padding:9px 12px;color:#fff;
+  font-weight:900;cursor:pointer;background:#667eea}
+.megaAction.gold{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#111}
+.megaAction.green{background:#2e7d32}
+.megaAction.red{background:#b71c1c}
+.achievement{display:flex;gap:10px;align-items:center;padding:9px;
+  border-radius:8px;background:#0004;margin-top:7px;border-left:3px solid #555}
+.achievement.done{border-left-color:#ffd700;background:#3b2e0844}
+.achievementIcon{font-size:24px}
+#powerBar{margin-top:8px}
+.powerReady{color:#7cff7c}
+#megaNotice{position:fixed;left:50%;top:12%;transform:translateX(-50%);
+  z-index:150;display:none;padding:12px 18px;border-radius:12px;
+  background:#111e;border:2px solid #ffd700;color:#fff;font-weight:900;
+  box-shadow:0 10px 40px #000}
+@media(max-width:600px){
+  #megaBtn{top:175px;right:10px;padding:10px 12px;font-size:12px}
+  #megaBox{padding:14px}
+}
+
+</style>
+
+<style id="mega30-css">
+#mega30Btn{position:fixed;right:18px;bottom:92px;z-index:9998;border:0;border-radius:16px;padding:12px 16px;background:linear-gradient(135deg,#ff7a00,#ff1744,#8e24aa);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 8px 28px #0008;animation:megaPulse 1.8s infinite}
+@keyframes megaPulse{50%{transform:scale(1.05);filter:brightness(1.18)}}
+#mega30Modal{display:none;position:fixed;inset:0;background:#000b;z-index:9999;align-items:center;justify-content:center;padding:14px;font-family:inherit}
+#mega30Modal.open{display:flex}.mega30Box{width:min(980px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(145deg,#10131c,#171b29);border:2px solid #ff7a00;border-radius:24px;color:#fff;box-shadow:0 20px 70px #000; padding:20px}.mega30Head{display:flex;justify-content:space-between;gap:12px;align-items:center}.mega30Head h2{margin:0;font-size:clamp(22px,4vw,34px)}.mega30Close{border:0;border-radius:12px;padding:9px 13px;cursor:pointer}.mega30Grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:16px}.mega30Card{background:#ffffff0b;border:1px solid #ffffff18;border-radius:16px;padding:13px}.mega30Card b{display:block;margin-bottom:5px}.mega30Card small{opacity:.75}.mega30Card button{margin-top:9px;border:0;border-radius:10px;padding:8px 11px;cursor:pointer;font-weight:800}.mega30On{outline:2px solid #ff9800}.mega30Stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.mega30Stat{background:#0005;border-radius:12px;padding:10px;text-align:center}.mega30Stat strong{display:block;font-size:22px}.mega30Bar{height:9px;background:#0008;border-radius:99px;overflow:hidden;margin-top:8px}.mega30Bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9800,#ff1744,#9c27b0)}#mega30Toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%) translateY(30px);opacity:0;z-index:10001;background:#111;color:#fff;padding:11px 16px;border-radius:13px;pointer-events:none;transition:.25s;border:1px solid #ff9800}#mega30Toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.mega30Fx{animation:megaShake .28s linear 1}@keyframes megaShake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@media(max-width:600px){#mega30Btn{right:10px;bottom:82px;padding:9px 12px}.mega30Stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 
@@ -981,6 +1046,74 @@ button{cursor:pointer}
 <button id="adminBtn" class="floating-btn" title="Admin">
   ⚙️
 </button>
+
+
+<button id="megaBtn" type="button">🔥 MEGA UPDATE</button>
+
+<div id="megaModal" aria-hidden="true">
+  <div id="megaBox" role="dialog" aria-modal="true">
+    <div class="megaHead">
+      <h2>🔥 CHAOS MEGA UPDATE 3.0</h2>
+      <button id="megaClose" class="megaClose">✕ CERRAR</button>
+    </div>
+
+    <div class="megaGrid">
+      <div class="megaCard">
+        <h3>📊 ESTADÍSTICAS</h3>
+        <div id="megaStats" class="megaSmall"></div>
+      </div>
+
+      <div class="megaCard">
+        <h3>🎯 MISIÓN ACTUAL</h3>
+        <div id="missionText" class="megaSmall">Cargando...</div>
+        <div class="megaBar"><i id="missionBar"></i></div>
+        <div id="missionReward" class="megaSmall"></div>
+      </div>
+
+      <div class="megaCard">
+        <h3>🎁 RECOMPENSA DIARIA</h3>
+        <div id="dailyText" class="megaSmall">Cargando...</div>
+        <div class="megaActions">
+          <button id="dailyBtn" class="megaAction gold">🎁 RECLAMAR</button>
+        </div>
+      </div>
+
+      <div class="megaCard">
+        <h3>⚡ PODER CHAOS</h3>
+        <div id="powerText" class="megaValue">0%</div>
+        <div class="megaSmall">Atrapa monedas para cargarlo.</div>
+        <div class="megaBar"><i id="powerFill"></i></div>
+        <div class="megaActions">
+          <button id="powerBtn" class="megaAction">⚡ ACTIVAR</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="section-title">🏆 LOGROS</h3>
+    <div id="achievementsList"></div>
+
+    <h3 class="section-title">🛠️ MEJORAS 3.0</h3>
+    <div class="megaCard">
+      <div class="megaSmall">
+        • Sistema de misiones y recompensas<br>
+        • Recompensa diaria persistente<br>
+        • Poder Chaos cargable<br>
+        • Logros persistentes<br>
+        • Estadísticas de partidas y monedas<br>
+        • Efectos especiales mejorados<br>
+        • Guardado local compatible con tu progreso actual<br>
+        • Compatible con mouse, teclado, touch y Chromebook
+      </div>
+    </div>
+
+    <div class="megaActions">
+      <button id="megaResetStats" class="megaAction red">♻️ REINICIAR ESTADÍSTICAS 3.0</button>
+      <button id="megaClose2" class="megaAction">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<div id="megaNotice"></div>
 
 <div id="toast" class="toast"></div>
 
@@ -5071,11 +5204,11 @@ document.getElementById(
    UPDATES — CONTADOR
 ========================================================== */
 
-const UPDATE_VERSION="2.0";
+const UPDATE_VERSION="3.0";
 
 const UPDATE_TARGET_DATE=
   new Date(
-    "2026-09-05T00:00:00"
+    "2026-09-11T00:00:00"
   );
 
 const updateCountdownEl=
@@ -5491,7 +5624,280 @@ render();
 
 initOnlineMode();
 
+
+/* ==========================================================
+   CHAOS MEGA UPDATE x30 — 30 NUEVAS COSAS
+========================================================== */
+(()=>{
+ const KEY='atmMega30';
+ const defaults={double:false,magnet:false,shield:false,slow:false,lucky:false,fever:false,auto:false,crit:false,comboLock:false,coinRush:false,night:false,rainbow:false,ghost:false,hard:false,mini:false,giant:false,lowGravity:false,zeroGravity:false,freeze:false,scoreBoost:false,timeBoost:false,instant:false,reroll:false,streak:false,party:false,flash:false,shake:false,boss:false,rerollCount:0,best:0,coins:0,combo:0,power:0};
+ let m=Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));
+ const save=()=>localStorage.setItem(KEY,JSON.stringify(m));
+ const $=id=>document.getElementById(id);
+ const toast=t=>{const e=$('mega30Toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)};
+ const features=[
+ ['💰','Doble monedas','double','Duplica la recompensa de monedas.'],
+ ['🧲','Imán de monedas','magnet','Aumenta la zona de captura.'],
+ ['🛡️','Escudo','shield','Protege una caída perdida.'],
+ ['🐌','Tiempo lento','slow','Reduce la velocidad de las monedas.'],
+ ['🍀','Moneda afortunada','lucky','Probabilidad de recompensa extra.'],
+ ['🔥','Modo Fiebre','fever','Mantén combos altos durante más tiempo.'],
+ ['🤖','Auto combo','auto','Ayuda a mantener el combo.'],
+ ['💥','Golpe crítico','crit','Algunas capturas dan recompensa x3.'],
+ ['🔒','Combo bloqueado','comboLock','El combo no baja por un fallo.'],
+ ['🌧️','Lluvia de monedas','coinRush','Genera una ráfaga visual de monedas.'],
+ ['🌙','Modo noche','night','Oscurece la arena para un reto extra.'],
+ ['🌈','Modo arcoíris','rainbow','Efecto visual multicolor.'],
+ ['👻','Modo fantasma','ghost','Hace el HUD semitransparente.'],
+ ['☠️','Modo difícil','hard','Aumenta el desafío.'],
+ ['🔍','Mini monedas','mini','Monedas más pequeñas.'],
+ ['🪙','Moneda gigante','giant','Monedas más grandes.'],
+ ['🌙','Gravedad baja','lowGravity','Caída más lenta.'],
+ ['🚀','Gravedad cero','zeroGravity','Efecto de flotación.'],
+ ['❄️','Congelación','freeze','Congela temporalmente el caos.'],
+ ['📈','Score Boost','scoreBoost','Aumenta el score temporalmente.'],
+ ['⏱️','Time Boost','timeBoost','Añade tiempo al activar.'],
+ ['⚡','Captura instantánea','instant','Activa una ráfaga instantánea.'],
+ ['🎲','Re-roll','reroll','Cambia la misión/recompensa local.'],
+ ['🔥','Racha diaria','streak','Bonificación por jugar seguido.'],
+ ['🎉','Party Mode','party','Más efectos y partículas.'],
+ ['💡','Flash','flash','Destello al activar poderes.'],
+ ['📳','Shake','shake','Sacude la interfaz en eventos.'],
+ ['👹','Mini Boss','boss','Activa una alerta especial de jefe.'],
+ ['🏆','Récord Hunter','record','Guarda tu mejor combo.'],
+ ['⚙️','Chaos Console','console','Muestra un panel rápido de estado.']
+ ];
+ const specialKeys=new Set(['record','console']);
+ const grid=$('mega30Grid');
+ if(grid){features.forEach(([icon,name,key,desc],i)=>{const c=document.createElement('div');c.className='mega30Card';c.dataset.key=key;c.innerHTML=`<b>${icon} ${i+1}. ${name}</b><small>${desc}</small><button>${m[key]?'DESACTIVAR':'ACTIVAR'}</button>`;c.querySelector('button').onclick=()=>toggle(key,c);grid.appendChild(c)})}
+ function toggle(key,c){
+   if(key==='record'){toast(`🏆 Récord guardado: ${m.best}`);return}
+   if(key==='console'){toast(`⚙️ Power ${m.power}% • Combo ${m.combo} • Monedas ${m.coins}`);return}
+   m[key]=!m[key];save();apply();render();toast(`${m[key]?'✅ Activado':'❌ Desactivado'}: ${features.find(x=>x[2]===key)?.[1]||key}`);
+   if(m[key]&&['coinRush','instant','party','flash','shake','boss'].includes(key))trigger(key);
+ }
+ function render(){
+   const stateWin=typeof state!=='undefined'?state:null;
+   m.best=Math.max(m.best,stateWin?.combo||0);m.combo=stateWin?.combo||m.combo;
+   $('m30Best').textContent=m.best;$('m30Coins').textContent=m.coins;$('m30Combo').textContent=m.combo;$('m30Power').textContent=m.power+'%';$('m30Bar').style.width=m.power+'%';
+   grid?.querySelectorAll('.mega30Card').forEach(c=>{const k=c.dataset.key;if(!specialKeys.has(k)){c.classList.toggle('mega30On',!!m[k]);c.querySelector('button').textContent=m[k]?'DESACTIVAR':'ACTIVAR'}});
+ }
+ function apply(){
+   document.body.classList.toggle('mega30Fx',m.shake);
+   document.body.style.filter=m.night?'brightness(.82) saturate(.9)':m.rainbow?'hue-rotate(35deg)':'';
+   const canvas=$('gameCanvas');if(canvas){canvas.style.opacity=m.ghost?'.78':'';canvas.style.transform=m.giant?'scale(1.01)':'';}
+ }
+ function trigger(key){
+   const root=document.body;
+   if(key==='coinRush'){for(let i=0;i<18;i++){const e=document.createElement('div');e.textContent='🪙';e.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:-30px;font-size:${16+Math.random()*20}px;z-index:10000;pointer-events:none;transition:transform 1.4s linear,opacity 1.4s`;root.appendChild(e);requestAnimationFrame(()=>{e.style.transform=`translateY(${innerHeight+80}px) rotate(${Math.random()*900}deg)`;e.style.opacity='0'});setTimeout(()=>e.remove(),1600)}}
+   if(key==='flash'){root.animate([{filter:'brightness(2.2)'},{filter:'brightness(1)'}],{duration:350})}
+   if(key==='shake'){root.classList.remove('mega30Fx');void root.offsetWidth;root.classList.add('mega30Fx')}
+   if(key==='boss')toast('👹 MINI BOSS: ¡Atrapa la moneda especial!');
+   if(key==='party')toast('🎉 PARTY MODE: ¡CAOS ACTIVADO!');
+   if(key==='instant')m.power=100;
+   save();render();
+ }
+ window.mega30Add=()=>{m.power=Math.min(100,m.power+(m.lucky?7:4));m.coins+=(m.double?2:1);if(typeof state!=='undefined')m.combo=state.combo||m.combo;m.best=Math.max(m.best,m.combo);save();render()};
+ const open=()=>{$('mega30Modal').classList.add('open');$('mega30Modal').setAttribute('aria-hidden','false');render()};const close=()=>{$('mega30Modal').classList.remove('open');$('mega30Modal').setAttribute('aria-hidden','true')};
+ $('mega30Btn')?.addEventListener('click',open);$('mega30Close')?.addEventListener('click',close);$('mega30Modal')?.addEventListener('click',e=>{if(e.target.id==='mega30Modal')close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key.toLowerCase()==='m'&&!e.ctrlKey&&!e.altKey)open();});
+ const oldCatch=window.catchCoin;if(typeof oldCatch==='function'){window.catchCoin=function(...args){const r=oldCatch.apply(this,args);window.mega30Add();return r}}
+ const oldReset=window.resetCoin;if(typeof oldReset==='function'){window.resetCoin=function(...args){const r=oldReset.apply(this,args);if(m.shake)trigger('shake');return r}}
+ setInterval(()=>{if(typeof state!=='undefined'){m.combo=state.combo||0;m.best=Math.max(m.best,m.combo);if(m.fever&&m.combo>=5)m.power=Math.min(100,m.power+1);render();save()}},1000);
+ apply();render();
+})();
+
 </script>
 
+
+<button id="mega30Btn">🔥 MEGA ×30</button>
+<div id="mega30Modal" aria-hidden="true">
+ <div class="mega30Box">
+  <div class="mega30Head"><h2>🔥 CHAOS MEGA UPDATE ×20</h2><button class="mega30Close" id="mega30Close">✕</button></div>
+  <div class="mega30Stats">
+   <div class="mega30Stat">🏆<strong id="m30Best">0</strong><small>Récord</small></div><div class="mega30Stat">💰<strong id="m30Coins">0</strong><small>Monedas</small></div><div class="mega30Stat">🔥<strong id="m30Combo">0</strong><small>Combo</small></div><div class="mega30Stat">⚡<strong id="m30Power">0%</strong><small>Chaos Power</small></div>
+  </div>
+  <div class="mega30Bar"><i id="m30Bar"></i></div>
+  <div class="mega30Grid" id="mega30Grid"></div>
+ </div>
+</div><div id="mega30Toast"></div>
+
+<script>
+/* ==========================================================
+   TRAILER 2.0 — FUNCIONES REALES
+   Se añade sin cambiar la interfaz original.
+========================================================== */
+(()=>{
+  const KEY='atmTrailer20Data';
+  const data=Object.assign({
+    dailyClaim:'',
+    dailyStreak:0,
+    catches:0,
+    missionDone:false,
+    missionTarget:25,
+    missionReward:500,
+    power:0,
+    achievements:[],
+    bestCombo:0
+  },JSON.parse(localStorage.getItem(KEY)||'{}'));
+  const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+  const $=id=>document.getElementById(id);
+  const today=()=>new Date().toISOString().slice(0,10);
+
+  function notice(t){
+    if(typeof showToast==='function') showToast(t);
+    else if(typeof addSystemMessage==='function') addSystemMessage(t);
+  }
+
+  function updateDaily(){
+    const text=$('dailyText'),btn=$('dailyBtn');
+    if(!text||!btn)return;
+    const claimed=data.dailyClaim===today();
+    text.innerHTML=claimed
+      ? `✅ Recompensa reclamada hoy.<br>🔥 Racha: ${data.dailyStreak} día(s)`
+      : `🎁 500 monedas + 5 gemas.<br>🔥 Racha actual: ${data.dailyStreak}`;
+    btn.disabled=claimed;
+    btn.textContent=claimed?'✅ RECLAMADA':'🎁 RECLAMAR';
+    btn.style.opacity=claimed?'.55':'1';
+  }
+
+  function claimDaily(){
+    if(data.dailyClaim===today()){
+      notice('🎁 Ya reclamaste la recompensa de hoy.');
+      return;
+    }
+    const yesterday=new Date();
+    yesterday.setDate(yesterday.getDate()-1);
+    const y=yesterday.toISOString().slice(0,10);
+    data.dailyStreak=data.dailyClaim===y?data.dailyStreak+1:1;
+    data.dailyClaim=today();
+    state.coins+=500;
+    /* El proyecto original usa monedas como economía principal. */
+    if(!Number.isFinite(state.gems))state.gems=0;
+    state.gems+=5;
+    if(typeof saveState==='function')saveState();
+    save();
+    updateDaily();
+    if(typeof updateShopHeader==='function')updateShopHeader();
+    notice('🎁 ¡RECOMPENSA DIARIA! +500 🪙 +5 💎');
+    if(typeof createParticles==='function')createParticles(canvas.width/2,canvas.height/2,20,'🎁');
+  }
+
+  function updateMission(){
+    const text=$('missionText'),bar=$('missionBar'),reward=$('missionReward');
+    if(!text||!bar||!reward)return;
+    const value=Math.min(data.catches,data.missionTarget);
+    text.textContent=`Atrapa ${data.missionTarget} monedas — ${value}/${data.missionTarget}`;
+    bar.style.width=(value/data.missionTarget*100)+'%';
+    reward.textContent=data.missionDone?'✅ RECOMPENSA RECLAMADA':'🎁 Recompensa: '+data.missionReward+' 🪙';
+  }
+
+  function completeMission(){
+    if(data.missionDone||data.catches<data.missionTarget)return;
+    data.missionDone=true;
+    state.coins+=data.missionReward;
+    if(typeof saveState==='function')saveState();
+    save();
+    notice('🏆 ¡MISIÓN COMPLETADA! +'+data.missionReward+' 🪙');
+    updateMission();
+  }
+
+  const achievementList=[
+    ['first','🪙 Primera captura',()=>data.catches>=1],
+    ['ten','🔥 10 capturas',()=>data.catches>=10],
+    ['mission','🎯 Misión completada',()=>data.missionDone],
+    ['combo','🔥 Combo x5',()=>data.bestCombo>=5],
+    ['daily','🎁 Recompensa diaria',()=>data.dailyStreak>=1]
+  ];
+
+  function updateAchievements(){
+    const box=$('achievementsList');
+    if(!box)return;
+    box.innerHTML='';
+    achievementList.forEach(a=>{
+      const done=a[2]();
+      if(done&&!data.achievements.includes(a[0]))data.achievements.push(a[0]);
+      const d=document.createElement('div');
+      d.className='achievement '+(done?'done':'');
+      d.innerHTML=`<div class="achievementIcon">${done?'🏆':'🔒'}</div><div><b>${a[1]}</b><div class="megaSmall">${done?'Desbloqueado':'Bloqueado'}</div></div>`;
+      box.appendChild(d);
+    });
+    save();
+  }
+
+  function updatePower(){
+    const t=$('powerText'),b=$('powerFill'),btn=$('powerBtn');
+    if(!t||!b||!btn)return;
+    t.textContent=data.power+'%';
+    b.style.width=data.power+'%';
+    btn.disabled=data.power<100;
+    btn.textContent=data.power>=100?'⚡ ACTIVAR':'⚡ CARGANDO...';
+    if(data.power>=100)t.classList.add('powerReady');
+    else t.classList.remove('powerReady');
+  }
+
+  function activatePower(){
+    if(data.power<100){notice('⚡ El Poder Chaos todavía no está cargado.');return;}
+    data.power=0;
+    save();
+    state.chaosDoubleUntil=Date.now()+10000;
+    notice('⚡ ¡PODER CHAOS ACTIVADO! x2 durante 10 segundos');
+    if(typeof createParticles==='function')createParticles(canvas.width/2,canvas.height/2,35,'⚡');
+    updatePower();
+  }
+
+  if($('dailyBtn'))$('dailyBtn').addEventListener('click',claimDaily);
+  if($('powerBtn'))$('powerBtn').addEventListener('click',activatePower);
+
+  /* Integra las recompensas con la captura real sin reemplazarla. */
+  const originalCatch=window.catchCoin;
+  if(typeof originalCatch==='function'&&!window.__trailer20Wrapped){
+    window.__trailer20Wrapped=true;
+    window.catchCoin=function(){
+      const before=state.score;
+      originalCatch.apply(this,arguments);
+      if(state.score>before){
+        data.catches++;
+        data.power=Math.min(100,data.power+4);
+        data.bestCombo=Math.max(data.bestCombo,state.combo||1);
+        if(data.catches>=data.missionTarget)completeMission();
+        updateMission();
+        updatePower();
+        updateAchievements();
+        save();
+      }
+    };
+  }
+
+  /* Estado visible en el panel existente. */
+  function updateAll(){
+    updateDaily();updateMission();updatePower();updateAchievements();
+    const stats=$('megaStats');
+    if(stats){
+      stats.innerHTML=`🪙 ${state.coins} &nbsp; | &nbsp; 🏆 ${state.highScore} &nbsp; | &nbsp; ⭐ Nivel ${state.level} &nbsp; | &nbsp; 🔥 Mejor combo x${data.bestCombo}`;
+    }
+  }
+
+  const megaBtn=$('megaBtn'),megaModal=$('megaModal'),megaClose=$('megaClose'),megaClose2=$('megaClose2');
+  function openMega(){if(!megaModal)return;megaModal.classList.add('open');megaModal.setAttribute('aria-hidden','false');updateAll();}
+  function closeMega(){if(!megaModal)return;megaModal.classList.remove('open');megaModal.setAttribute('aria-hidden','true');}
+  if(megaBtn)megaBtn.addEventListener('click',openMega);
+  if(megaClose)megaClose.addEventListener('click',closeMega);
+  if(megaClose2)megaClose2.addEventListener('click',closeMega);
+  if(megaModal)megaModal.addEventListener('click',e=>{if(e.target===megaModal)closeMega();});
+
+  /* Inicialización sin modificar el diseño. */
+  updateAll();
+
+  /* Hace que el Poder Chaos siga cargándose aunque el panel esté cerrado. */
+  setInterval(()=>{
+    if(data.power>100)data.power=100;
+    updatePower();
+    updateMission();
+    updateAchievements();
+    save();
+  },1000);
+})();
+</script>
 </body>
 </html>
