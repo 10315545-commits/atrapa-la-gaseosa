@@ -1,21 +1,17 @@
-# Security Policy
+# Seguridad
 
-## Supported Versions
+## Reportar un problema de seguridad
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Si encuentras un problema de seguridad en este proyecto, puedes informarlo al creador del proyecto.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+Por favor, incluye:
 
-## Reporting a Vulnerability
+* Una descripción del problema.
+* Los pasos para reproducirlo.
+* Qué parte del proyecto podría afectar.
 
-Use this section to tell people how to report a vulnerability.
+No publiques información sensible sobre una vulnerabilidad antes de que pueda ser revisada.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Alcance
+
+Este archivo se aplica al código y los archivos de este repositorio.
