@@ -854,6 +854,85 @@ button{cursor:pointer}
   }
 }
 
+/* ==========================================================
+   CHAOS MEGA UPDATE 2.0
+========================================================== */
+#megaBtn{
+  position:fixed;top:145px;right:20px;z-index:75;
+  border:2px solid #ffd700;border-radius:14px;padding:12px 16px;
+  background:linear-gradient(135deg,#ff1744,#7c4dff);
+  color:#fff;font-weight:900;font-size:14px;cursor:pointer;
+  box-shadow:0 10px 35px #0008;transition:.2s
+}
+#megaBtn:hover{transform:scale(1.05)}
+#megaModal{
+  position:fixed;inset:0;z-index:140;display:none;align-items:center;
+  justify-content:center;background:#000c;padding:14px
+}
+#megaModal.open{display:flex}
+#megaBox{
+  width:min(1000px,96vw);max-height:92vh;overflow:auto;
+  background:linear-gradient(145deg,#11131f,#1b1028);
+  border:2px solid #ffd700;border-radius:18px;padding:20px;
+  box-shadow:0 25px 80px #000
+}
+.megaHead{display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid #ffffff22;padding-bottom:12px;margin-bottom:15px}
+.megaHead h2{color:#ffd700}
+.megaClose{background:#ffffff18;border:0;color:#fff;border-radius:8px;
+  padding:8px 12px;font-weight:900;cursor:pointer}
+.megaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.megaCard{background:#ffffff0d;border:1px solid #ffffff18;border-radius:12px;padding:14px}
+.megaCard h3{font-size:14px;color:#9bdfff;margin-bottom:8px}
+.megaValue{font-size:25px;color:#ffd700;font-weight:900}
+.megaSmall{font-size:11px;color:#aaa;line-height:1.5}
+.megaBar{height:9px;background:#0008;border-radius:10px;overflow:hidden;margin-top:8px}
+.megaBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff1744)}
+.megaActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.megaAction{border:0;border-radius:8px;padding:9px 12px;color:#fff;
+  font-weight:900;cursor:pointer;background:#667eea}
+.megaAction.gold{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#111}
+.megaAction.green{background:#2e7d32}
+.megaAction.red{background:#b71c1c}
+.achievement{display:flex;gap:10px;align-items:center;padding:9px;
+  border-radius:8px;background:#0004;margin-top:7px;border-left:3px solid #555}
+.achievement.done{border-left-color:#ffd700;background:#3b2e0844}
+.achievementIcon{font-size:24px}
+#powerBar{margin-top:8px}
+.powerReady{color:#7cff7c}
+#megaNotice{position:fixed;left:50%;top:12%;transform:translateX(-50%);
+  z-index:150;display:none;padding:12px 18px;border-radius:12px;
+  background:#111e;border:2px solid #ffd700;color:#fff;font-weight:900;
+  box-shadow:0 10px 40px #000}
+@media(max-width:600px){
+  #megaBtn{top:175px;right:10px;padding:10px 12px;font-size:12px}
+  #megaBox{padding:14px}
+}
+
+</style>
+
+<style id="mega20-css">
+#mega20Btn{position:fixed;right:18px;bottom:92px;z-index:9998;border:0;border-radius:16px;padding:12px 16px;background:linear-gradient(135deg,#ff7a00,#ff1744,#8e24aa);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 0 25px #ff7a0055;animation:megaPulse 2s infinite}
+#mega20Btn:hover{transform:scale(1.08)}
+@keyframes megaPulse{50%{transform:scale(1.05);filter:brightness(1.18)}}
+#mega20Modal{display:none;position:fixed;inset:0;background:#000b;z-index:9999;align-items:center;justify-content:center;padding:14px;font-family:inherit}
+#mega20Modal.open{display:flex}.mega20Box{width:min(980px,96vw);max-height:92vh;overflow:auto;background:linear-gradient(145deg,#10131c,#171b29);border:2px solid #ff7a00;border-radius:24px;color:#fff;padding:20px;box-shadow:0 20px 60px #000}
+.mega20Head{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #ff7a00;padding-bottom:15px;margin-bottom:18px}
+.mega20Head h2{font-size:26px;color:#fff}
+.mega20Close{border:0;border-radius:10px;padding:9px 15px;background:#555;color:#fff;font-weight:900;cursor:pointer}
+.mega20Stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.mega20Stat{background:#ffffff0d;border:1px solid #ff7a0044;border-radius:10px;padding:12px;text-align:center}
+.mega20Label{color:#aaa;font-size:10px;font-weight:900}
+.mega20Value{color:#ff7a00;font-size:28px;font-weight:900;margin:5px 0}
+.mega20Items{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.mega20Item{background:#ffffff08;border:1px solid #ffffff1a;border-radius:12px;padding:12px;text-align:center}
+.mega20Item h3{color:#ff7a00;font-size:13px;margin-bottom:8px}
+.mega20Item p{color:#aaa;font-size:11px}
+.mega20Buttons{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}
+.mega20Btn{border:0;border-radius:8px;padding:10px 16px;font-weight:900;color:#fff;cursor:pointer;background:#ff7a00}
+.mega20Btn:hover{transform:scale(1.04)}
+.mega20Fx{animation:megaShake .28s linear 1}@keyframes megaShake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@media(max-width:600px){#mega20Btn{right:10px;bottom:82px;padding:9px 12px}.mega20Stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 
@@ -984,6 +1063,70 @@ button{cursor:pointer}
 </button>
 
 <div id="toast" class="toast"></div>
+
+<!-- =========================
+     MEGA 2.0
+========================= -->
+
+<button id="mega20Btn" type="button">
+  ✨ MEGA 2.0
+</button>
+
+<div id="mega20Modal" aria-hidden="true">
+
+  <div class="mega20Box">
+
+    <div class="mega20Head">
+      <h2>✨ MEGA 2.0</h2>
+      <button class="mega20Close" id="mega20Close">✕</button>
+    </div>
+
+    <div class="mega20Stats">
+      <div class="mega20Stat">
+        <div class="mega20Label">MONEDAS</div>
+        <div class="mega20Value" id="mega20Coins">0</div>
+      </div>
+      <div class="mega20Stat">
+        <div class="mega20Label">NIVEL</div>
+        <div class="mega20Value" id="mega20Level">1</div>
+      </div>
+      <div class="mega20Stat">
+        <div class="mega20Label">RACHA</div>
+        <div class="mega20Value" id="mega20Streak">0</div>
+      </div>
+      <div class="mega20Stat">
+        <div class="mega20Label">PODER</div>
+        <div class="mega20Value" id="mega20Power">0%</div>
+      </div>
+    </div>
+
+    <div class="mega20Items">
+      <div class="mega20Item">
+        <h3>🔥 FUEGO</h3>
+        <p>Quema monedas en su camino</p>
+      </div>
+      <div class="mega20Item">
+        <h3>❄️ HIELO</h3>
+        <p>Congela el juego</p>
+      </div>
+      <div class="mega20Item">
+        <h3>⚡ RAYO</h3>
+        <p>Dobla velocidad</p>
+      </div>
+      <div class="mega20Item">
+        <h3>🌙 LUNA</h3>
+        <p>Modo nocturno</p>
+      </div>
+    </div>
+
+    <div class="mega20Buttons">
+      <button class="mega20Btn" id="mega20Action">ACTIVAR</button>
+      <button class="mega20Btn" style="background:#555;" id="mega20Close2">CERRAR</button>
+    </div>
+
+  </div>
+
+</div>
 
 <!-- =========================
      TIENDA
